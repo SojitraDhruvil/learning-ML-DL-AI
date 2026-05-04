@@ -1,0 +1,135 @@
+
+<h2 class="sr-only">Step by step derivation of MSE loss function derivative using power rule and chain rule</h2>
+<style>
+  .steps-wrap { padding: 1rem 0 0; }
+  .step-nav { display: flex; gap: 6px; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-border-secondary); cursor: pointer; transition: background .15s; border: none; padding: 0; }
+  .dot.on { background: #185FA5; }
+  .panel { display: none; }
+  .panel.on { display: block; }
+  .eq-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 14px 18px; font-family: var(--font-mono); font-size: 14px; color: var(--color-text-primary); margin: 10px 0; border-left: 3px solid #185FA5; line-height: 2; }
+  .eq-box .hi { color: #BA7517; font-weight: 500; }
+  .eq-box .ans { color: #0F6E56; font-weight: 500; }
+  .eq-box .dim { color: var(--color-text-secondary); }
+  .explain { font-size: 13px; color: var(--color-text-secondary); line-height: 1.7; margin: 8px 0 12px; }
+  .explain strong { color: var(--color-text-primary); font-weight: 500; }
+  .rule-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px; background: var(--color-background-info); color: var(--color-text-info); font-weight: 500; margin-bottom: 8px; }
+  .nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+  .step-counter { font-size: 12px; color: var(--color-text-secondary); }
+  .progress { height: 3px; background: var(--color-border-tertiary); border-radius: 2px; margin-bottom: 14px; }
+  .progress-fill { height: 3px; background: #185FA5; border-radius: 2px; transition: width .3s; }
+</style>
+
+<div class="steps-wrap">
+  <div class="progress"><div class="progress-fill" id="prog" style="width:16%"></div></div>
+  <div class="step-nav" id="dots"></div>
+
+  <div class="panel on" id="p0">
+    <div class="rule-badge">Shuru karo</div>
+    <div class="explain">Hamare paas yeh <strong>MSE Loss function</strong> hai. Hum iska A2 ke saath derivative nikalenge:</div>
+    <div class="eq-box">
+      L = <span class="hi">(1/m)</span> × <span class="hi">Σ</span> (A2 − y)<span class="hi">²</span>
+      <br><br>
+      <span class="dim">Jahan:</span><br>
+      <span class="dim">m  = number of samples (4)</span><br>
+      <span class="dim">A2 = model prediction</span><br>
+      <span class="dim">y  = actual answer</span>
+    </div>
+    <div class="explain">Yeh ek <strong>composite function</strong> hai — bahar ² hai, andar (A2−y) hai. Isliye Chain Rule lagega.</div>
+  </div>
+
+  <div class="panel" id="p1">
+    <div class="rule-badge">Step 1 — substitution</div>
+    <div class="explain">Pehle ek shortcut: <strong>u = (A2 − y)</strong> likhte hain, toh L simple dikhta hai:</div>
+    <div class="eq-box">
+      u  = A2 − y<br><br>
+      L  = <span class="hi">(1/m) × u²</span><br><br>
+      <span class="dim">Ab hume chahiye: dL/dA2</span><br>
+      <span class="dim">Chain rule se: dL/dA2 = dL/du × du/dA2</span>
+    </div>
+    <div class="explain">Yeh substitution karna zaroori nahi, but <strong>step clear karne ke liye helpful hai</strong>.</div>
+  </div>
+
+  <div class="panel" id="p2">
+    <div class="rule-badge">Step 2 — Power Rule on L</div>
+    <div class="explain"><strong>dL/du</strong> nikalo — L = (1/m)×u², u ke saath differentiate karo:</div>
+    <div class="eq-box">
+      L  = (1/m) × u²<br><br>
+      dL/du = (1/m) × <span class="hi">2u</span><br><br>
+      <span class="dim">Power Rule: d/du[u²] = 2u</span><br>
+      <span class="dim">(1/m) constant hai, woh bahar aa jaata hai</span><br><br>
+      dL/du = <span class="ans">2u/m</span>
+    </div>
+  </div>
+
+  <div class="panel" id="p3">
+    <div class="rule-badge">Step 3 — Derivative of u</div>
+    <div class="explain"><strong>du/dA2</strong> nikalo — u = A2 − y, A2 ke saath differentiate karo:</div>
+    <div class="eq-box">
+      u  = A2 − y<br><br>
+      du/dA2 = <span class="hi">d/dA2 [A2]</span> − <span class="hi">d/dA2 [y]</span><br><br>
+      <span class="dim">d/dA2 [A2] = 1   (khud ka derivative = 1)</span><br>
+      <span class="dim">d/dA2 [y]  = 0   (y constant hai, A2 nahi)</span><br><br>
+      du/dA2 = <span class="ans">1</span>
+    </div>
+  </div>
+
+  <div class="panel" id="p4">
+    <div class="rule-badge">Step 4 — Chain Rule combine karo</div>
+    <div class="explain">Ab dono parts ko <strong>multiply</strong> karo — yahi Chain Rule hai:</div>
+    <div class="eq-box">
+      dL/dA2 = dL/du × du/dA2<br><br>
+      dL/dA2 = <span class="hi">(2u/m)</span> × <span class="hi">(1)</span><br><br>
+      <span class="dim">u ki jagah (A2 − y) wapas rakho:</span><br><br>
+      dL/dA2 = <span class="ans">2(A2 − y) / m</span>
+    </div>
+  </div>
+
+  <div class="panel" id="p5">
+    <div class="rule-badge">Final answer — code mein</div>
+    <div class="explain">Yahi line code mein likhi thi! Ab puri tarah samajh aaya:</div>
+    <div class="eq-box">
+      <span class="dim"># Math:</span><br>
+      dL/dA2 = <span class="ans">2 × (A2 − y) / m</span><br><br>
+      <span class="dim"># Python code (exactly same):</span><br>
+      dL_dA2 = <span class="hi">2 * (A2 - y) / m</span><br><br>
+      <span class="dim">Agar A2=0.3, y=1.0, m=4:</span><br>
+      dL_dA2 = 2 × (0.3 − 1.0) / 4<br>
+             = 2 × (−0.7) / 4<br>
+             = <span class="ans">−0.35</span>
+    </div>
+    <div class="explain">Negative gradient → model ne <strong>kam predict kiya</strong>, toh A2 badhega next step mein. </div>
+  </div>
+
+  <div class="nav-row">
+    <button onclick="go(-1)" id="btn-prev">← Pichha</button>
+    <span class="step-counter" id="counter">Step 1 / 6</span>
+    <button onclick="go(1)" id="btn-next">Agla →</button>
+  </div>
+</div>
+
+<script>
+  const total = 6;
+  let cur = 0;
+  const dotsEl = document.getElementById('dots');
+  for (let i = 0; i < total; i++) {
+    const b = document.createElement('button');
+    b.className = 'dot' + (i === 0 ? ' on' : '');
+    b.onclick = () => show(i);
+    dotsEl.appendChild(b);
+  }
+  function show(n) {
+    document.getElementById('p' + cur).classList.remove('on');
+    document.querySelectorAll('.dot')[cur].classList.remove('on');
+    cur = n;
+    document.getElementById('p' + cur).classList.add('on');
+    document.querySelectorAll('.dot')[cur].classList.add('on');
+    document.getElementById('counter').textContent = 'Step ' + (cur + 1) + ' / ' + total;
+    document.getElementById('prog').style.width = ((cur + 1) / total * 100) + '%';
+    document.getElementById('btn-prev').disabled = cur === 0;
+    document.getElementById('btn-next').disabled = cur === total - 1;
+    document.getElementById('btn-next').textContent = cur === total - 1 ? 'Done!' : 'Agla →';
+  }
+  function go(d) { if (cur + d >= 0 && cur + d < total) show(cur + d); }
+  show(0);
+</script>

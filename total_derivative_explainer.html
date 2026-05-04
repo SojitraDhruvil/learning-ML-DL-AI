@@ -1,0 +1,198 @@
+
+<h2 class="sr-only">Total derivative interactive explainer — partial contributions from x and y</h2>
+<style>
+  .wrap { padding: 1rem 0 0; }
+  .tab-row { display: flex; gap: 6px; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .tab { padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); transition: all .15s; }
+  .tab.on { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; font-weight: 500; }
+  .panel { display: none; }
+  .panel.on { display: block; }
+  .eq { font-family: var(--font-mono); font-size: 13px; background: var(--color-background-secondary); padding: 10px 14px; border-radius: var(--border-radius-md); margin: 8px 0; border-left: 3px solid #185FA5; line-height: 2; color: var(--color-text-primary); }
+  .eq .a { color: #BA7517; font-weight: 500; }
+  .eq .b { color: #185FA5; font-weight: 500; }
+  .eq .c { color: #0F6E56; font-weight: 500; }
+  .eq .d { color: var(--color-text-secondary); }
+  .note { font-size: 13px; color: var(--color-text-secondary); line-height: 1.7; margin: 8px 0; }
+  .note strong { color: var(--color-text-primary); font-weight: 500; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: 8px; margin: 10px 0; }
+  .card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+  .card-l { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 3px; }
+  .card-v { font-size: 18px; font-weight: 500; font-family: var(--font-mono); color: var(--color-text-primary); }
+  .slider-row { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+  .slider-lbl { font-size: 13px; color: var(--color-text-secondary); min-width: 80px; }
+  .slider-val { font-size: 13px; font-weight: 500; min-width: 36px; font-family: var(--font-mono); color: var(--color-text-primary); }
+  .contrib-bar { height: 8px; border-radius: 4px; transition: width .3s; }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 12px; color: var(--color-text-secondary); }
+  .bar-wrap { flex: 1; background: var(--color-border-tertiary); border-radius: 4px; height: 8px; overflow: hidden; }
+</style>
+
+<div class="wrap">
+  <div class="tab-row">
+    <button class="tab on" onclick="show(0)">Concept</button>
+    <button class="tab" onclick="show(1)">Example: f(x,y)=x²+xy</button>
+    <button class="tab" onclick="show(2)">ML mein use</button>
+    <button class="tab" onclick="show(3)">Calculator</button>
+  </div>
+
+  <!-- Panel 0: Concept -->
+  <div class="panel on" id="p0">
+    <div class="note">Socho ek pahaad hai — aap ek point par khade ho. Aap <strong>x direction mein</strong> bhi move kar sakte ho, <strong>y direction mein</strong> bhi. Total change = dono ka sum.</div>
+    <div class="eq">
+      <span class="d">Ek variable:</span><br>
+      df = <span class="a">(df/dx)</span> × dx<br><br>
+      <span class="d">Do variable (Total Derivative):</span><br>
+      df = <span class="a">(∂f/∂x)</span> × dx  +  <span class="b">(∂f/∂y)</span> × dy<br><br>
+      <span class="d">Teen variable:</span><br>
+      df = <span class="a">(∂f/∂x)</span>dx + <span class="b">(∂f/∂y)</span>dy + <span class="c">(∂f/∂z)</span>dz
+    </div>
+    <div class="note"><strong>∂ (partial)</strong> = baaki sab fixed, sirf ek se differentiate karo.<br><strong>Total derivative</strong> = saare partial derivatives ka weighted sum.</div>
+    <svg width="100%" viewBox="0 0 680 180" role="img">
+      <title>Total derivative as sum of contributions from x and y directions</title>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- f box -->
+      <g class="c-gray">
+        <rect x="40" y="70" width="90" height="44" rx="8" stroke-width="0.5"/>
+        <text class="th" x="85" y="96" text-anchor="middle" dominant-baseline="central">f(x, y)</text>
+      </g>
+      <!-- x contribution -->
+      <line x1="130" y1="88" x2="240" y2="60" stroke="#BA7517" stroke-width="2" marker-end="url(#arrow)"/>
+      <g class="c-amber">
+        <rect x="240" y="38" width="150" height="44" rx="8" stroke-width="0.5"/>
+        <text class="th" x="315" y="55" text-anchor="middle" dominant-baseline="central">x ka contribution</text>
+        <text class="ts" x="315" y="72" text-anchor="middle" dominant-baseline="central">(∂f/∂x) × dx</text>
+      </g>
+      <!-- y contribution -->
+      <line x1="130" y1="100" x2="240" y2="120" stroke="#185FA5" stroke-width="2" marker-end="url(#arrow)"/>
+      <g class="c-blue">
+        <rect x="240" y="98" width="150" height="44" rx="8" stroke-width="0.5"/>
+        <text class="th" x="315" y="115" text-anchor="middle" dominant-baseline="central">y ka contribution</text>
+        <text class="ts" x="315" y="132" text-anchor="middle" dominant-baseline="central">(∂f/∂y) × dy</text>
+      </g>
+      <!-- plus -->
+      <text class="th" x="418" y="94" text-anchor="middle" dominant-baseline="central">+</text>
+      <!-- total -->
+      <line x1="430" y1="88" x2="470" y2="88" stroke="#0F6E56" stroke-width="2" marker-end="url(#arrow)"/>
+      <g class="c-teal">
+        <rect x="470" y="66" width="150" height="44" rx="8" stroke-width="0.5"/>
+        <text class="th" x="545" y="83" text-anchor="middle" dominant-baseline="central">Total df</text>
+        <text class="ts" x="545" y="100" text-anchor="middle" dominant-baseline="central">combined change</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Panel 1: Worked Example -->
+  <div class="panel" id="p1">
+    <div class="note">Function: <strong>f(x, y) = x² + xy</strong></div>
+    <div class="eq">
+      <span class="d">Step 1: ∂f/∂x nikalo (y fixed rakho)</span><br>
+      f = <span class="a">x²</span> + <span class="a">xy</span><br>
+      ∂f/∂x = <span class="a">2x + y</span><br><br>
+      <span class="d">Step 2: ∂f/∂y nikalo (x fixed rakho)</span><br>
+      f = x² + <span class="b">xy</span><br>
+      ∂f/∂y = <span class="b">x</span><br><br>
+      <span class="d">Step 3: Total derivative likhho</span><br>
+      df = <span class="a">(2x+y)</span>·dx + <span class="b">(x)</span>·dy
+    </div>
+    <div class="note">Ab x=2, y=3, dx=0.1, dy=0.2 rakho:</div>
+    <div class="eq">
+      ∂f/∂x = 2(2)+3 = <span class="a">7</span><br>
+      ∂f/∂y = 2 = <span class="b">2</span><br><br>
+      df = <span class="a">7</span>×0.1  +  <span class="b">2</span>×0.2<br>
+         = <span class="a">0.7</span>  +  <span class="b">0.4</span><br>
+         = <span class="c">1.1</span>  ← total change in f<br><br>
+      <span class="d">Check: f(2,3)=4+6=10, f(2.1,3.2)=4.41+6.72=11.13</span><br>
+      <span class="d">Actual change = 11.13−10 = 1.13 ≈ </span><span class="c">1.1</span> ✓
+    </div>
+  </div>
+
+  <!-- Panel 2: ML connection -->
+  <div class="panel" id="p2">
+    <div class="note">Neural network mein Loss, <strong>hazaron weights W par depend</strong> karta hai. Total derivative hi batata hai sabka combined effect:</div>
+    <div class="eq">
+      <span class="d">Loss function:</span><br>
+      L = f(W1, W2, W3, ... Wn)<br><br>
+      <span class="d">Total derivative (gradient):</span><br>
+      dL = <span class="a">(∂L/∂W1)</span>dW1 + <span class="a">(∂L/∂W2)</span>dW2 + ... + <span class="a">(∂L/∂Wn)</span>dWn<br><br>
+      <span class="d">Gradient vector = saare partial derivatives:</span><br>
+      ∇L = [ <span class="a">∂L/∂W1</span>, <span class="a">∂L/∂W2</span>, ..., <span class="a">∂L/∂Wn</span> ]
+    </div>
+    <div class="note">Backpropagation actually <strong>total derivative</strong> hi calculate karta hai — har weight ka partial derivative nikalta hai Chain Rule se. Phir gradient descent se update karta hai:</div>
+    <div class="eq">
+      W_new = W_old − lr × <span class="a">∂L/∂W</span>
+      <span class="d">  ← yahi total derivative ka use hai ML mein</span>
+    </div>
+  </div>
+
+  <!-- Panel 3: Calculator -->
+  <div class="panel" id="p3">
+    <div class="note">f(x, y) = x² + xy — total derivative calculator:</div>
+    <div class="slider-row">
+      <span class="slider-lbl">x =</span>
+      <input type="range" min="-5" max="5" step="0.5" value="2" id="sx" style="flex:1" oninput="calc()">
+      <span class="slider-val" id="vx">2.0</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-lbl">y =</span>
+      <input type="range" min="-5" max="5" step="0.5" value="3" id="sy" style="flex:1" oninput="calc()">
+      <span class="slider-val" id="vy">3.0</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-lbl">dx =</span>
+      <input type="range" min="-1" max="1" step="0.1" value="0.1" id="sdx" style="flex:1" oninput="calc()">
+      <span class="slider-val" id="vdx">0.1</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-lbl">dy =</span>
+      <input type="range" min="-1" max="1" step="0.1" value="0.2" id="sdy" style="flex:1" oninput="calc()">
+      <span class="slider-val" id="vdy">0.2</span>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-l">f(x,y)</div><div class="card-v" id="fval">10.00</div></div>
+      <div class="card"><div class="card-l">∂f/∂x = 2x+y</div><div class="card-v" id="pfx" style="color:#BA7517">7.00</div></div>
+      <div class="card"><div class="card-l">∂f/∂y = x</div><div class="card-v" id="pfy" style="color:#185FA5">2.00</div></div>
+      <div class="card"><div class="card-l">Total df</div><div class="card-v" id="tdf" style="color:#0F6E56">1.10</div></div>
+    </div>
+    <div class="bar-row"><span style="color:#BA7517;min-width:110px">x contribution</span><div class="bar-wrap"><div class="contrib-bar" id="bx" style="background:#BA7517;width:50%"></div></div><span id="cx" style="min-width:40px;color:#BA7517">0.70</span></div>
+    <div class="bar-row"><span style="color:#185FA5;min-width:110px">y contribution</span><div class="bar-wrap"><div class="contrib-bar" id="by" style="background:#185FA5;width:30%"></div></div><span id="cy" style="min-width:40px;color:#185FA5">0.40</span></div>
+  </div>
+</div>
+
+<script>
+  let cur=0;
+  function show(n){
+    document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('on',i===n));
+    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',i===n));
+    cur=n;
+  }
+
+  function calc(){
+    const x=parseFloat(document.getElementById('sx').value);
+    const y=parseFloat(document.getElementById('sy').value);
+    const dx=parseFloat(document.getElementById('sdx').value);
+    const dy=parseFloat(document.getElementById('sdy').value);
+    document.getElementById('vx').textContent=x.toFixed(1);
+    document.getElementById('vy').textContent=y.toFixed(1);
+    document.getElementById('vdx').textContent=dx.toFixed(1);
+    document.getElementById('vdy').textContent=dy.toFixed(1);
+    const fv=x*x+x*y;
+    const pfx=2*x+y;
+    const pfy=x;
+    const cx=pfx*dx;
+    const cy=pfy*dy;
+    const tdf=cx+cy;
+    document.getElementById('fval').textContent=fv.toFixed(2);
+    document.getElementById('pfx').textContent=pfx.toFixed(2);
+    document.getElementById('pfy').textContent=pfy.toFixed(2);
+    document.getElementById('tdf').textContent=tdf.toFixed(2);
+    document.getElementById('cx').textContent=cx.toFixed(2);
+    document.getElementById('cy').textContent=cy.toFixed(2);
+    const tot=Math.abs(cx)+Math.abs(cy)||1;
+    document.getElementById('bx').style.width=Math.abs(cx)/tot*100+'%';
+    document.getElementById('by').style.width=Math.abs(cy)/tot*100+'%';
+  }
+  calc();
+</script>

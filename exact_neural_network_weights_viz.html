@@ -1,0 +1,163 @@
+
+<style>
+  .nn-outer { padding: 1rem 0 0; }
+  .info-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .chip { background: var(--color-background-secondary); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--color-text-secondary); font-family: var(--font-mono); }
+  .chip span { color: var(--color-text-primary); font-weight: 500; }
+  .leg { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; font-size: 12px; color: var(--color-text-secondary); align-items: center; }
+  .leg-item { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 28px; height: 3px; border-radius: 2px; }
+</style>
+
+<div class="nn-outer">
+  <div class="info-row">
+    <div class="chip">Architecture: <span>Input(2) → Hidden(2) → Output(1)</span></div>
+    <div class="chip">W1 shape: <span>(2×2) = 4 weights</span></div>
+    <div class="chip">W2 shape: <span>(2×1) = 2 weights</span></div>
+  </div>
+  <div class="leg">
+    <div class="leg-item"><div class="leg-dot" style="background:#185FA5"></div> W1 connections</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#0F6E56"></div> W2 connections</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#BA7517; height:2px; border-top: 2px dashed #BA7517;"></div> Bias</div>
+  </div>
+
+  <svg width="100%" viewBox="0 0 680 480" role="img">
+    <title>Full neural network weight connections diagram</title>
+    <desc>Neural network with 2 input neurons (x1, x2), 2 hidden neurons (h1, h2), and 1 output neuron (y-hat), showing all W1 and W2 weight connections and biases.</desc>
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- ── Column X labels ── -->
+    <text class="ts" x="100" y="30" text-anchor="middle">Input layer</text>
+    <text class="ts" x="340" y="30" text-anchor="middle">Hidden layer</text>
+    <text class="ts" x="560" y="30" text-anchor="middle">Output layer</text>
+
+    <!-- ══════════════════════════════════════════
+         W1 CONNECTIONS  (Input → Hidden)
+         W1[0,0]: x1→h1   W1[1,0]: x2→h1
+         W1[0,1]: x1→h2   W1[1,1]: x2→h2
+    ══════════════════════════════════════════ -->
+
+    <!-- x1 → h1  (W1[0,0]) -->
+    <line x1="145" y1="155" x2="295" y2="185"
+          stroke="#185FA5" stroke-width="2" opacity="0.85" marker-end="url(#arr)"/>
+    <rect x="196" y="154" width="62" height="19" rx="4"
+          fill="var(--color-background-primary)" stroke="#185FA5" stroke-width="0.5" opacity="0.9"/>
+    <text class="ts" x="227" y="167" text-anchor="middle" style="fill:#185FA5">W1[0,0]</text>
+
+    <!-- x2 → h1  (W1[1,0]) -->
+    <line x1="145" y1="325" x2="295" y2="205"
+          stroke="#185FA5" stroke-width="2" opacity="0.65" marker-end="url(#arr)"/>
+    <rect x="178" y="264" width="62" height="19" rx="4"
+          fill="var(--color-background-primary)" stroke="#185FA5" stroke-width="0.5" opacity="0.9"/>
+    <text class="ts" x="209" y="277" text-anchor="middle" style="fill:#185FA5">W1[1,0]</text>
+
+    <!-- x1 → h2  (W1[0,1]) -->
+    <line x1="145" y1="175" x2="295" y2="305"
+          stroke="#185FA5" stroke-width="2" opacity="0.65" stroke-dasharray="6 3" marker-end="url(#arr)"/>
+    <rect x="178" y="222" width="62" height="19" rx="4"
+          fill="var(--color-background-primary)" stroke="#185FA5" stroke-width="0.5" opacity="0.9"/>
+    <text class="ts" x="209" y="235" text-anchor="middle" style="fill:#185FA5">W1[0,1]</text>
+
+    <!-- x2 → h2  (W1[1,1]) -->
+    <line x1="145" y1="345" x2="295" y2="325"
+          stroke="#185FA5" stroke-width="2" opacity="0.85" marker-end="url(#arr)"/>
+    <rect x="196" y="326" width="62" height="19" rx="4"
+          fill="var(--color-background-primary)" stroke="#185FA5" stroke-width="0.5" opacity="0.9"/>
+    <text class="ts" x="227" y="339" text-anchor="middle" style="fill:#185FA5">W1[1,1]</text>
+
+    <!-- ══════════════════════════════════════════
+         W2 CONNECTIONS  (Hidden → Output)
+         W2[0,0]: h1→ŷ    W2[1,0]: h2→ŷ
+    ══════════════════════════════════════════ -->
+
+    <!-- h1 → ŷ  (W2[0,0]) -->
+    <line x1="385" y1="185" x2="515" y2="248"
+          stroke="#0F6E56" stroke-width="2.5" opacity="0.9" marker-end="url(#arr)"/>
+    <rect x="414" y="196" width="62" height="19" rx="4"
+          fill="var(--color-background-primary)" stroke="#0F6E56" stroke-width="0.5" opacity="0.9"/>
+    <text class="ts" x="445" y="209" text-anchor="middle" style="fill:#0F6E56">W2[0,0]</text>
+
+    <!-- h2 → ŷ  (W2[1,0]) -->
+    <line x1="385" y1="325" x2="515" y2="272"
+          stroke="#0F6E56" stroke-width="2.5" opacity="0.9" marker-end="url(#arr)"/>
+    <rect x="414" y="297" width="62" height="19" rx="4"
+          fill="var(--color-background-primary)" stroke="#0F6E56" stroke-width="0.5" opacity="0.9"/>
+    <text class="ts" x="445" y="310" text-anchor="middle" style="fill:#0F6E56">W2[1,0]</text>
+
+    <!-- ══════════════════════════════════════════
+         BIAS NODES
+    ══════════════════════════════════════════ -->
+    <!-- b1 → h1 -->
+    <line x1="300" y1="90" x2="322" y2="158"
+          stroke="#BA7517" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.7" marker-end="url(#arr)"/>
+    <!-- b1 → h2 -->
+    <line x1="300" y1="90" x2="322" y2="298"
+          stroke="#BA7517" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.7" marker-end="url(#arr)"/>
+    <g>
+      <circle cx="300" cy="80" r="20" fill="var(--color-background-primary)" stroke="#BA7517" stroke-width="1" stroke-dasharray="4 2"/>
+      <text class="ts" x="300" y="84" text-anchor="middle" style="fill:#BA7517">b1</text>
+    </g>
+
+    <!-- b2 → ŷ -->
+    <line x1="530" y1="90" x2="545" y2="222"
+          stroke="#BA7517" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.7" marker-end="url(#arr)"/>
+    <g>
+      <circle cx="530" cy="80" r="20" fill="var(--color-background-primary)" stroke="#BA7517" stroke-width="1" stroke-dasharray="4 2"/>
+      <text class="ts" x="530" y="84" text-anchor="middle" style="fill:#BA7517">b2</text>
+    </g>
+
+    <!-- ══════════════════════════════════════════
+         NEURONS
+    ══════════════════════════════════════════ -->
+
+    <!-- Input: x1 -->
+    <g class="node" onclick="sendPrompt('x1 input neuron kya karta hai?')">
+      <circle cx="100" cy="165" r="42" fill="var(--color-background-secondary)" stroke="#185FA5" stroke-width="2"/>
+      <text class="th" x="100" y="157" text-anchor="middle" dominant-baseline="central" style="fill:#185FA5">x₁</text>
+      <text class="ts" x="100" y="175" text-anchor="middle" style="fill:var(--color-text-secondary)">feature 1</text>
+    </g>
+
+    <!-- Input: x2 -->
+    <g class="node" onclick="sendPrompt('x2 input neuron kya karta hai?')">
+      <circle cx="100" cy="335" r="42" fill="var(--color-background-secondary)" stroke="#185FA5" stroke-width="2"/>
+      <text class="th" x="100" y="327" text-anchor="middle" dominant-baseline="central" style="fill:#185FA5">x₂</text>
+      <text class="ts" x="100" y="345" text-anchor="middle" style="fill:var(--color-text-secondary)">feature 2</text>
+    </g>
+
+    <!-- Hidden: h1 -->
+    <g class="node" onclick="sendPrompt('h1 hidden neuron mein kya calculate hota hai?')">
+      <circle cx="340" cy="195" r="42" fill="var(--color-background-secondary)" stroke="#185FA5" stroke-width="2"/>
+      <text class="th" x="340" y="185" text-anchor="middle" dominant-baseline="central" style="fill:#185FA5">h₁</text>
+      <text class="ts" x="340" y="202" text-anchor="middle" style="fill:var(--color-text-secondary)">sigmoid(</text>
+      <text class="ts" x="340" y="216" text-anchor="middle" style="fill:var(--color-text-secondary)">Z1[:,0])</text>
+    </g>
+
+    <!-- Hidden: h2 -->
+    <g class="node" onclick="sendPrompt('h2 hidden neuron mein kya calculate hota hai?')">
+      <circle cx="340" cy="335" r="42" fill="var(--color-background-secondary)" stroke="#185FA5" stroke-width="2"/>
+      <text class="th" x="340" y="325" text-anchor="middle" dominant-baseline="central" style="fill:#185FA5">h₂</text>
+      <text class="ts" x="340" y="342" text-anchor="middle" style="fill:var(--color-text-secondary)">sigmoid(</text>
+      <text class="ts" x="340" y="356" text-anchor="middle" style="fill:var(--color-text-secondary)">Z1[:,1])</text>
+    </g>
+
+    <!-- Output: ŷ -->
+    <g class="node" onclick="sendPrompt('output neuron mein sigmoid kyun lagata hai?')">
+      <circle cx="560" cy="260" r="42" fill="var(--color-background-secondary)" stroke="#0F6E56" stroke-width="2"/>
+      <text class="th" x="560" y="250" text-anchor="middle" dominant-baseline="central" style="fill:#0F6E56">ŷ</text>
+      <text class="ts" x="560" y="267" text-anchor="middle" style="fill:var(--color-text-secondary)">sigmoid(</text>
+      <text class="ts" x="560" y="281" text-anchor="middle" style="fill:var(--color-text-secondary)">Z2)</text>
+    </g>
+
+    <!-- ══════════════════════════════════════════
+         CODE MAPPING  (bottom annotation)
+    ══════════════════════════════════════════ -->
+    <rect x="30" y="420" width="620" height="46" rx="8"
+          fill="var(--color-background-secondary)" stroke="var(--color-border-tertiary)" stroke-width="0.5"/>
+    <text class="ts" x="340" y="437" text-anchor="middle" style="fill:var(--color-text-secondary)">Code mein: Z1 = X @ W1 + b1  →  shape (4,2)  |  A1 = sigmoid(Z1)  →  h₁ = A1[:,0],  h₂ = A1[:,1]</text>
+    <text class="ts" x="340" y="455" text-anchor="middle" style="fill:var(--color-text-secondary)">Z2 = A1 @ W2 + b2  →  shape (4,1)  |  A2 = sigmoid(Z2)  →  ŷ = A2[:,0]</text>
+  </svg>
+</div>

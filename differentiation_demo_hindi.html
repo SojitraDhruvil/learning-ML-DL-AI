@@ -1,0 +1,184 @@
+
+<h2 class="sr-only">Interactive demo: f(x) = x² ka derivative samjho</h2>
+
+<style>
+  .demo-wrap { padding: 1rem 0; font-family: var(--font-sans); }
+  .controls { display: flex; flex-direction: column; gap: 14px; margin-bottom: 1.5rem; }
+  .ctrl-row { display: flex; align-items: center; gap: 12px; }
+  .ctrl-label { font-size: 13px; color: var(--color-text-secondary); min-width: 90px; }
+  .ctrl-val { font-size: 14px; font-weight: 500; min-width: 36px; color: var(--color-text-primary); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; }
+  .card-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .card-val { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+  .card-val.highlight { color: #185FA5; }
+  .card-val.actual { color: #0F6E56; }
+  .card-val.error-val { color: #993C1D; }
+  .insight { font-size: 13px; color: var(--color-text-secondary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; border-left: 3px solid #185FA5; margin-top: 0.5rem; }
+</style>
+
+<div class="demo-wrap">
+  <div class="controls">
+    <div class="ctrl-row">
+      <span class="ctrl-label">x की value</span>
+      <input type="range" min="0.5" max="5" step="0.5" value="3" id="xval" style="flex:1;">
+      <span class="ctrl-val" id="xval-out">3</span>
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Δx (change)</span>
+      <input type="range" min="0.1" max="2" step="0.1" value="1" id="dx" style="flex:1;">
+      <span class="ctrl-val" id="dx-out">1.0</span>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-label">f(x) = x²</div>
+      <div class="card-val" id="fx">9.00</div>
+    </div>
+    <div class="card">
+      <div class="card-label">df/dx = 2x</div>
+      <div class="card-val" id="dfdx">6.00</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Derivative estimate</div>
+      <div class="card-val highlight" id="est">15.00</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Actual f(x+Δx)</div>
+      <div class="card-val actual" id="actual">16.00</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Error</div>
+      <div class="card-val error-val" id="err">1.00</div>
+    </div>
+  </div>
+
+  <div style="position:relative; width:100%; height:260px; margin-bottom:1rem;">
+    <canvas id="chart" role="img" aria-label="f(x) = x squared graph with tangent line and approximation"></canvas>
+  </div>
+
+  <div class="insight" id="insight">Δx = 1 है, इसलिए error थोड़ी ज़्यादा है। Δx को छोटा करो — error कम होगी!</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+  const xSlider = document.getElementById('xval');
+  const dxSlider = document.getElementById('dx');
+  const xOut = document.getElementById('xval-out');
+  const dxOut = document.getElementById('dx-out');
+
+  let myChart = null;
+
+  function update() {
+    const x = parseFloat(xSlider.value);
+    const dx = parseFloat(dxSlider.value);
+    xOut.textContent = x.toFixed(1);
+    dxOut.textContent = dx.toFixed(1);
+
+    const fx = x * x;
+    const deriv = 2 * x;
+    const est = fx + deriv * dx;
+    const actual = (x + dx) * (x + dx);
+    const err = Math.abs(actual - est);
+
+    document.getElementById('fx').textContent = fx.toFixed(2);
+    document.getElementById('dfdx').textContent = deriv.toFixed(2);
+    document.getElementById('est').textContent = est.toFixed(2);
+    document.getElementById('actual').textContent = actual.toFixed(2);
+    document.getElementById('err').textContent = err.toFixed(2);
+
+    const insight = document.getElementById('insight');
+    if (dx <= 0.2) {
+      insight.textContent = "Δx = " + dx.toFixed(1) + " — बहुत छोटा! Estimate लगभग exact है। Error = " + err.toFixed(3);
+      insight.style.borderLeftColor = '#0F6E56';
+    } else if (dx <= 0.5) {
+      insight.textContent = "Δx = " + dx.toFixed(1) + " — अच्छा approximation। Error = " + err.toFixed(2);
+      insight.style.borderLeftColor = '#185FA5';
+    } else {
+      insight.textContent = "Δx = " + dx.toFixed(1) + " — ज़्यादा बड़ा है, error बढ़ रही है = " + err.toFixed(2) + ". Δx छोटा करो!";
+      insight.style.borderLeftColor = '#993C1D';
+    }
+
+    drawChart(x, dx, fx, deriv, est, actual);
+  }
+
+  function drawChart(x, dx, fx, deriv, est, actual) {
+    const pts = [];
+    const start = Math.max(0.1, x - 2);
+    const end = x + dx + 1;
+    for (let t = start; t <= end; t += 0.1) {
+      pts.push({ x: parseFloat(t.toFixed(2)), y: parseFloat((t * t).toFixed(4) )});
+    }
+
+    const tangentLine = [
+      { x: parseFloat((x - 1).toFixed(2)), y: parseFloat((fx + deriv * (x - 1 - x)).toFixed(4)) },
+      { x: parseFloat((x + dx + 0.3).toFixed(2)), y: parseFloat((fx + deriv * (x + dx + 0.3 - x)).toFixed(4)) }
+    ];
+
+    const ctx = document.getElementById('chart').getContext('2d');
+    if (myChart) myChart.destroy();
+
+    myChart = new Chart(ctx, {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            label: 'f(x) = x²',
+            data: pts,
+            showLine: true,
+            borderColor: '#185FA5',
+            backgroundColor: 'transparent',
+            pointRadius: 0,
+            borderWidth: 2.5,
+            tension: 0.3
+          },
+          {
+            label: 'Tangent (derivative)',
+            data: tangentLine,
+            showLine: true,
+            borderColor: '#BA7517',
+            backgroundColor: 'transparent',
+            pointRadius: 0,
+            borderWidth: 2,
+            borderDash: [5, 4]
+          },
+          {
+            label: 'f(x) (current point)',
+            data: [{ x, y: fx }],
+            pointRadius: 7,
+            pointBackgroundColor: '#185FA5',
+            showLine: false
+          },
+          {
+            label: 'Estimate (derivative)',
+            data: [{ x: x + dx, y: est }],
+            pointRadius: 7,
+            pointBackgroundColor: '#BA7517',
+            showLine: false
+          },
+          {
+            label: 'Actual f(x+Δx)',
+            data: [{ x: x + dx, y: actual }],
+            pointRadius: 7,
+            pointBackgroundColor: '#0F6E56',
+            showLine: false
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: 'x', color: '#888' }, ticks: { color: '#888' }, grid: { color: 'rgba(128,128,128,0.15)' } },
+          y: { title: { display: true, text: 'f(x)', color: '#888' }, ticks: { color: '#888' }, grid: { color: 'rgba(128,128,128,0.15)' } }
+        }
+      }
+    });
+  }
+
+  xSlider.addEventListener('input', update);
+  dxSlider.addEventListener('input', update);
+  update();
+</script>

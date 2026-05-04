@@ -1,0 +1,122 @@
+
+<h2 class="sr-only">Forward propagation vs backward propagation — what each pass calculates</h2>
+<svg width="100%" viewBox="0 0 680 420" role="img">
+<title>Forward pass calculates predictions, backward pass calculates gradients</title>
+<desc>Two rows: top row shows forward propagation going left to right computing values. Bottom row shows backward propagation going right to left computing gradients.</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- ── LABELS column ── -->
+<text class="th" x="30" y="110" dominant-baseline="central">Forward</text>
+<text class="ts" x="30" y="128" dominant-baseline="central" style="fill:var(--color-text-secondary)">pass</text>
+
+<text class="th" x="30" y="300" dominant-baseline="central">Backward</text>
+<text class="ts" x="30" y="318" dominant-baseline="central" style="fill:var(--color-text-secondary)">pass</text>
+
+<!-- ═══════════════════════════════════════
+     FORWARD PASS  (top row, left → right)
+═══════════════════════════════════════ -->
+
+<!-- Node: Input -->
+<g class="node c-gray">
+  <rect x="100" y="80" width="110" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="155" y="101" text-anchor="middle" dominant-baseline="central">Input x</text>
+  <text class="ts" x="155" y="120" text-anchor="middle" dominant-baseline="central">Data dete hain</text>
+</g>
+
+<!-- arrow -->
+<line x1="210" y1="108" x2="245" y2="108" stroke="#185FA5" stroke-width="2" marker-end="url(#arrow)"/>
+<text class="ts" x="228" y="98" text-anchor="middle" style="fill:#185FA5">×W</text>
+
+<!-- Node: Hidden -->
+<g class="node c-blue">
+  <rect x="245" y="80" width="130" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="310" y="101" text-anchor="middle" dominant-baseline="central">Z1, A1</text>
+  <text class="ts" x="310" y="120" text-anchor="middle" dominant-baseline="central">h = sigmoid(xW)</text>
+</g>
+
+<!-- arrow -->
+<line x1="375" y1="108" x2="410" y2="108" stroke="#185FA5" stroke-width="2" marker-end="url(#arrow)"/>
+<text class="ts" x="393" y="98" text-anchor="middle" style="fill:#185FA5">×W</text>
+
+<!-- Node: Output -->
+<g class="node c-blue">
+  <rect x="410" y="80" width="110" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="465" y="101" text-anchor="middle" dominant-baseline="central">Z2, A2</text>
+  <text class="ts" x="465" y="120" text-anchor="middle" dominant-baseline="central">ŷ = sigmoid(hW)</text>
+</g>
+
+<!-- arrow -->
+<line x1="520" y1="108" x2="555" y2="108" stroke="#185FA5" stroke-width="2" marker-end="url(#arrow)"/>
+
+<!-- Node: Loss -->
+<g class="node c-coral">
+  <rect x="555" y="80" width="100" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="605" y="101" text-anchor="middle" dominant-baseline="central">Loss L</text>
+  <text class="ts" x="605" y="120" text-anchor="middle" dominant-baseline="central">(ŷ − y)²</text>
+</g>
+
+<!-- Forward label badge -->
+<rect x="100" y="152" width="555" height="22" rx="4" fill="none" stroke="#185FA5" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.5"/>
+<text class="ts" x="377" y="167" text-anchor="middle" style="fill:#185FA5">Sirf values calculate hoti hain — koi gradient nahi</text>
+
+<!-- ═══════════════════════════════════════
+     BACKWARD PASS  (bottom row, right → left)
+═══════════════════════════════════════ -->
+
+<!-- Node: dL start -->
+<g class="node c-coral">
+  <rect x="555" y="260" width="100" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="605" y="281" text-anchor="middle" dominant-baseline="central">dL/dA2</text>
+  <text class="ts" x="605" y="300" text-anchor="middle" dominant-baseline="central">2(A2−y)/m</text>
+</g>
+
+<!-- arrow back -->
+<line x1="555" y1="288" x2="520" y2="288" stroke="#BA7517" stroke-width="2" marker-end="url(#arrow)"/>
+<text class="ts" x="537" y="278" text-anchor="middle" style="fill:#BA7517">chain</text>
+
+<!-- Node: dW2 -->
+<g class="node c-amber">
+  <rect x="410" y="260" width="110" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="465" y="281" text-anchor="middle" dominant-baseline="central">dL/dW2</text>
+  <text class="ts" x="465" y="300" text-anchor="middle" dominant-baseline="central">W2 ka gradient</text>
+</g>
+
+<!-- arrow back -->
+<line x1="410" y1="288" x2="375" y2="288" stroke="#BA7517" stroke-width="2" marker-end="url(#arrow)"/>
+<text class="ts" x="393" y="278" text-anchor="middle" style="fill:#BA7517">chain</text>
+
+<!-- Node: dW1 -->
+<g class="node c-amber">
+  <rect x="245" y="260" width="130" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="310" y="281" text-anchor="middle" dominant-baseline="central">dL/dW1</text>
+  <text class="ts" x="310" y="300" text-anchor="middle" dominant-baseline="central">W1 ka gradient</text>
+</g>
+
+<!-- arrow back -->
+<line x1="245" y1="288" x2="210" y2="288" stroke="#BA7517" stroke-width="2" marker-end="url(#arrow)"/>
+<text class="ts" x="228" y="278" text-anchor="middle" style="fill:#BA7517">chain</text>
+
+<!-- Node: Update -->
+<g class="node c-teal">
+  <rect x="100" y="260" width="110" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="155" y="281" text-anchor="middle" dominant-baseline="central">Update W</text>
+  <text class="ts" x="155" y="300" text-anchor="middle" dominant-baseline="central">W = W − lr×grad</text>
+</g>
+
+<!-- Backward label badge -->
+<rect x="100" y="330" width="555" height="22" rx="4" fill="none" stroke="#BA7517" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.5"/>
+<text class="ts" x="377" y="345" text-anchor="middle" style="fill:#BA7517">Gradients calculate hote hain — weights update hote hain</text>
+
+<!-- DIVIDER -->
+<line x1="90" y1="195" x2="670" y2="195" stroke="var(--color-border-tertiary)" stroke-width="0.5" stroke-dasharray="6 4"/>
+<text class="ts" x="380" y="210" text-anchor="middle" style="fill:var(--color-text-secondary)">Loss calculate hone ke baad direction palat jaata hai</text>
+
+<!-- Direction arrows (big) -->
+<text class="ts" x="377" y="60" text-anchor="middle" style="fill:#185FA5">→ → → → (aage)</text>
+<text class="ts" x="377" y="250" text-anchor="middle" style="fill:#BA7517">← ← ← ← (peeche)</text>
+
+</svg>
