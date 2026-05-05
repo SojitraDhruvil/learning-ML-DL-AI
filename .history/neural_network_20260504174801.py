@@ -6,10 +6,6 @@ import numpy as np
 # ============================================================
 
 # ---------- Activation Function ----------
-# sigmoid = 1 / (1 + exp^(-y))  # squashes input to (0,1)
-# y = ax + b  # linear transformation
-
-
 def sigmoid(z):
     return 1 / (1 + np.exp(-z))
 
