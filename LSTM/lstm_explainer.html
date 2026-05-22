@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LSTM — How It Works</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #11111a;
+    --surface2: #1a1a28;
+    --border: #2a2a40;
+    --text: #e8e6ff;
+    --muted: #7a7899;
+    --amber: #f5a623;
+    --amber-dim: #3d2a08;
+    --green: #3ddc84;
+    --green-dim: #0d2d1c;
+    --teal: #00c9b1;
+    --teal-dim: #003d36;
+    --purple: #9b7dff;
+    --purple-dim: #1e1540;
+    --red: #ff5f6d;
+    --red-dim: #2d0d10;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 64px 40px 40px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--purple);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #e8e6ff 30%, #9b7dff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 560px;
+    font-weight: 400;
+  }
+
+  /* ── LAYOUT ── */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 40px 80px;
+  }
+  section { margin-bottom: 64px; }
+  h2 {
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.15em;
+    color: var(--purple);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2::after { content:''; flex:1; height:1px; background: var(--border); }
+
+  /* ── MEMORY LANE ── */
+  .memory-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .mem-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    width: 80px;
+    padding-top: 14px;
+    flex-shrink: 0;
+  }
+  .mem-highway {
+    flex: 1;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+  }
+  .mem-highway::before {
+    content: '';
+    position: absolute; inset: 0;
+    opacity: 0.06;
+  }
+  .mem-cell {
+    background: var(--amber-dim);
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+  .mem-cell::before { background: var(--amber); }
+  .mem-hidden {
+    background: var(--purple-dim);
+    border-color: var(--purple);
+    color: var(--purple);
+  }
+  .mem-hidden::before { background: var(--purple); }
+  .mem-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    flex-shrink: 0;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .mem-cell .mem-dot { background: var(--amber); }
+  .mem-hidden .mem-dot { background: var(--purple); }
+  @keyframes pulse {
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:0.5; transform:scale(0.7); }
+  }
+
+  /* ── GATES ── */
+  .gates-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media(max-width:600px){ .gates-grid{ grid-template-columns:1fr; } }
+
+  .gate-card {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 24px;
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .gate-card::before {
+    content:'';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    opacity: 0.08;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .gate-card:hover { transform: translateY(-3px); }
+  .gate-card:hover::before { opacity: 0.18; transform: scale(1.3); }
+
+  .gate-forget { border-color: var(--amber-dim); }
+  .gate-forget:hover { border-color: var(--amber); }
+  .gate-forget::before { background: var(--amber); }
+
+  .gate-input { border-color: var(--green-dim); }
+  .gate-input:hover { border-color: var(--green); }
+  .gate-input::before { background: var(--green); }
+
+  .gate-candidate { border-color: var(--teal-dim); }
+  .gate-candidate:hover { border-color: var(--teal); }
+  .gate-candidate::before { background: var(--teal); }
+
+  .gate-output { border-color: var(--purple-dim); }
+  .gate-output:hover { border-color: var(--purple); }
+  .gate-output::before { background: var(--purple); }
+
+  .gate-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .gate-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .gate-forget .gate-name { color: var(--amber); }
+  .gate-input .gate-name { color: var(--green); }
+  .gate-candidate .gate-name { color: var(--teal); }
+  .gate-output .gate-name { color: var(--purple); }
+
+  .gate-tagline {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 12px;
+  }
+  .gate-desc {
+    font-size: 14px;
+    line-height: 1.65;
+    color: #b0aed0;
+  }
+  .gate-activation {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .gate-forget .gate-activation { background: var(--amber-dim); color: var(--amber); }
+  .gate-input .gate-activation { background: var(--green-dim); color: var(--green); }
+  .gate-candidate .gate-activation { background: var(--teal-dim); color: var(--teal); }
+  .gate-output .gate-activation { background: var(--purple-dim); color: var(--purple); }
+
+  /* ── STEP-BY-STEP ── */
+  .steps-container { position: relative; }
+  .step-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .step-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .step-btn.active {
+    border-color: var(--purple);
+    background: var(--purple-dim);
+    color: var(--purple);
+  }
+  .step-btn:hover:not(.active) { border-color: var(--border); color: var(--text); }
+
+  .step-panel {
+    display: none;
+    animation: fadeSlide 0.3s ease;
+  }
+  .step-panel.active { display: block; }
+  @keyframes fadeSlide {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  .step-inner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .step-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .step-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .step-body {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #b0aed0;
+    margin-bottom: 20px;
+  }
+
+  /* visual: equation-like display */
+  .eq-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    font-family: 'Space Mono', monospace;
+  }
+  .eq-box {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    border: 1px solid;
+  }
+  .eq-op {
+    font-size: 20px;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .eq-result {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 8px;
+    font-style: italic;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .amber-box  { background:var(--amber-dim);  border-color:var(--amber);  color:var(--amber); }
+  .green-box  { background:var(--green-dim);  border-color:var(--green);  color:var(--green); }
+  .teal-box   { background:var(--teal-dim);   border-color:var(--teal);   color:var(--teal); }
+  .purple-box { background:var(--purple-dim); border-color:var(--purple); color:var(--purple); }
+  .gray-box   { background:var(--surface2);   border-color:var(--border); color:var(--muted); }
+
+  /* ── DEMO SIMULATOR ── */
+  .demo-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .demo-desc {
+    font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height:1.6;
+  }
+  .sliders { display: grid; gap: 20px; }
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slider-name { font-size: 14px; font-weight: 600; }
+  .slider-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    padding: 2px 10px;
+    border-radius: 4px;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .s-forget input[type=range] { background: linear-gradient(to right, var(--amber) var(--pct,50%), var(--border) var(--pct,50%)); }
+  .s-input  input[type=range] { background: linear-gradient(to right, var(--green) var(--pct,50%), var(--border) var(--pct,50%)); }
+  .s-output input[type=range] { background: linear-gradient(to right, var(--purple) var(--pct,50%), var(--border) var(--pct,50%)); }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(155,125,255,0.3);
+    transition: box-shadow 0.2s;
+  }
+  input[type=range]:hover::-webkit-slider-thumb { box-shadow: 0 0 0 5px rgba(155,125,255,0.4); }
+
+  .demo-result {
+    margin-top: 28px;
+    padding: 20px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .result-title {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  .result-bars { display: flex; flex-direction: column; gap: 10px; }
+  .r-bar-row { display: flex; align-items: center; gap: 12px; }
+  .r-bar-label { font-size: 12px; color: var(--muted); width: 120px; flex-shrink:0; font-family:'Space Mono',monospace; }
+  .r-bar-track {
+    flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden;
+  }
+  .r-bar-fill { height: 100%; border-radius: 5px; transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+  .r-bar-pct { font-size: 12px; font-family:'Space Mono',monospace; width:36px; text-align:right; }
+
+  /* ── ANALOGY BLOCK ── */
+  .analogy {
+    background: var(--surface);
+    border-left: 3px solid var(--purple);
+    border-radius: 0 12px 12px 0;
+    padding: 24px 28px;
+  }
+  .analogy-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--purple); }
+  .analogy-text { font-size: 15px; line-height: 1.75; color: #b0aed0; }
+  .analogy-text strong { color: var(--text); }
+
+  /* ── COMPARISON ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media(max-width:560px){ .compare-grid{ grid-template-columns:1fr; } }
+
+  .compare-card {
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .compare-name { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .compare-rnn .compare-name { color: var(--red); }
+  .compare-lstm .compare-name { color: var(--green); }
+  .compare-point {
+    display: flex; gap: 8px; align-items: flex-start;
+    font-size: 13px; color: #b0aed0; margin-bottom: 8px; line-height:1.5;
+  }
+  .cpt { flex-shrink:0; font-weight:700; font-size:13px; }
+  .compare-rnn .cpt  { color: var(--red); }
+  .compare-lstm .cpt { color: var(--green); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 40px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">deep learning / sequence models</div>
+  <h1>Long Short-Term Memory</h1>
+  <p class="hero-sub">A visual, interactive guide to understanding how LSTMs remember the important things — and forget the rest.</p>
+</div>
+
+<div class="main">
+
+  <!-- SECTION 0: ARCHITECTURE DIAGRAM -->
+  <section>
+    <h2>Cell architecture</h2>
+    <p style="font-size:15px;color:#b0aed0;line-height:1.7;margin-bottom:24px;">
+      This is what happens inside a single LSTM cell at one timestep. Every signal flows left-to-right. The gold highway at the top is the long-term memory (cell state); the purple path at the bottom is the output (hidden state). Hover over any component to highlight it.
+    </p>
+
+    <!-- LEGEND -->
+    <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px;font-family:'Space Mono',monospace;font-size:11px;">
+      <span style="display:flex;align-items:center;gap:6px;color:var(--amber)"><span style="width:28px;height:3px;background:var(--amber);border-radius:2px;display:inline-block"></span>Cell state (long-term)</span>
+      <span style="display:flex;align-items:center;gap:6px;color:var(--purple)"><span style="width:28px;height:3px;background:var(--purple);border-radius:2px;display:inline-block"></span>Hidden state (output)</span>
+      <span style="display:flex;align-items:center;gap:6px;color:var(--muted)"><span style="width:28px;height:3px;background:var(--muted);border-radius:2px;display:inline-block"></span>Input signals</span>
+      <span style="display:flex;align-items:center;gap:6px;color:var(--teal)"><span style="width:18px;height:18px;border-radius:50%;border:2px solid var(--teal);display:inline-flex;align-items:center;justify-content:center;font-size:9px">×</span>Multiply (gate)</span>
+      <span style="display:flex;align-items:center;gap:6px;color:var(--green)"><span style="width:18px;height:18px;border-radius:50%;border:2px solid var(--green);display:inline-flex;align-items:center;justify-content:center;font-size:9px">+</span>Add</span>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;overflow-x:auto;">
+      <svg id="lstm-arch" viewBox="0 0 860 480" style="width:100%;min-width:600px;display:block;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+          <marker id="arr-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#9b7dff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+          <marker id="arr-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#7a7899" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+          <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#3ddc84" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+          <marker id="arr-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#00c9b1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <!-- ══ CELL STATE HIGHWAY (top amber line) ══ -->
+        <line x1="20" y1="80" x2="840" y2="80" stroke="#f5a623" stroke-width="3" marker-end="url(#arr-amber)"/>
+        <!-- cell state label -->
+        <rect x="320" y="52" width="220" height="22" rx="4" fill="#3d2a08"/>
+        <text x="430" y="67" text-anchor="middle" font-family="'Space Mono',monospace" font-size="11" fill="#f5a623">Cell state  Cₜ  (long-term memory)</text>
+
+        <!-- ══ OUTER CELL BOX ══ -->
+        <rect x="60" y="30" width="740" height="420" rx="16" fill="none" stroke="#2a2a40" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="430" y="470" text-anchor="middle" font-family="'Space Mono',monospace" font-size="11" fill="#2a2a40">LSTM Cell</text>
+
+        <!-- ══════════════════════════════════
+             FORGET GATE  (x≈190)
+        ══════════════════════════════════ -->
+        <!-- gate box -->
+        <rect class="arch-gate" data-gate="forget" x="140" y="150" width="130" height="100" rx="10"
+              fill="#3d2a08" stroke="#f5a623" stroke-width="1.5"/>
+        <text x="205" y="192" text-anchor="middle" font-family="'Syne',sans-serif" font-size="13" font-weight="700" fill="#f5a623">Forget Gate</text>
+        <text x="205" y="210" text-anchor="middle" font-family="'Space Mono',monospace" font-size="10" fill="#f5a623" opacity="0.7">σ (sigmoid)</text>
+        <text x="205" y="230" text-anchor="middle" font-family="'Space Mono',monospace" font-size="10" fill="#f5a623" opacity="0.6">→ [0 … 1]</text>
+
+        <!-- multiply node on cell state: forget -->
+        <circle cx="205" cy="80" r="16" fill="#3d2a08" stroke="#f5a623" stroke-width="2"/>
+        <text x="205" y="85" text-anchor="middle" font-family="'Space Mono',monospace" font-size="14" font-weight="700" fill="#f5a623">×</text>
+        <!-- arrow from forget gate up to multiply -->
+        <line x1="205" y1="150" x2="205" y2="97" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+        <!-- forget gate label below node -->
+        <text x="205" y="128" text-anchor="middle" font-family="'Space Mono',monospace" font-size="9" fill="#f5a623" opacity="0.6">fₜ</text>
+
+        <!-- ══════════════════════════════════
+             INPUT GATE  (x≈380)
+        ══════════════════════════════════ -->
+        <rect class="arch-gate" data-gate="input" x="330" y="150" width="130" height="100" rx="10"
+              fill="#0d2d1c" stroke="#3ddc84" stroke-width="1.5"/>
+        <text x="395" y="192" text-anchor="middle" font-family="'Syne',sans-serif" font-size="13" font-weight="700" fill="#3ddc84">Input Gate</text>
+        <text x="395" y="210" text-anchor="middle" font-family="'Space Mono',monospace" font-size="10" fill="#3ddc84" opacity="0.7">σ (sigmoid)</text>
+        <text x="395" y="230" text-anchor="middle" font-family="'Space Mono',monospace" font-size="10" fill="#3ddc84" opacity="0.6">→ [0 … 1]</text>
+
+        <!-- ══════════════════════════════════
+             CANDIDATE VALUES  (x≈550)
+        ══════════════════════════════════ -->
+        <rect class="arch-gate" data-gate="candidate" x="490" y="150" width="130" height="100" rx="10"
+              fill="#003d36" stroke="#00c9b1" stroke-width="1.5"/>
+        <text x="555" y="185" text-anchor="middle" font-family="'Syne',sans-serif" font-size="13" font-weight="700" fill="#00c9b1">Candidate</text>
+        <text x="555" y="203" text-anchor="middle" font-family="'Syne',sans-serif" font-size="13" font-weight="700" fill="#00c9b1">Values</text>
+        <text x="555" y="221" text-anchor="middle" font-family="'Space Mono',monospace" font-size="10" fill="#00c9b1" opacity="0.7">tanh</text>
+        <text x="555" y="239" text-anchor="middle" font-family="'Space Mono',monospace" font-size="10" fill="#00c9b1" opacity="0.6">→ [-1 … 1]</text>
+
+        <!-- Multiply node: input × candidate -->
+        <circle cx="460" cy="80" r="16" fill="#0d2d1c" stroke="#3ddc84" stroke-width="2"/>
+        <text x="460" y="85" text-anchor="middle" font-family="'Space Mono',monospace" font-size="14" font-weight="700" fill="#3ddc84">×</text>
+
+        <!-- arrows: input gate → multiply node -->
+        <line x1="395" y1="150" x2="440" y2="97" stroke="#3ddc84" stroke-width="1.5" marker-end="url(#arr-green)"/>
+        <!-- candidate → multiply node -->
+        <line x1="555" y1="150" x2="480" y2="97" stroke="#00c9b1" stroke-width="1.5" marker-end="url(#arr-teal)"/>
+        <!-- labels -->
+        <text x="395" y="138" text-anchor="middle" font-family="'Space Mono',monospace" font-size="9" fill="#3ddc84" opacity="0.6">iₜ</text>
+        <text x="555" y="138" text-anchor="middle" font-family="'Space Mono',monospace" font-size="9" fill="#00c9b1" opacity="0.6">C̃ₜ</text>
+
+        <!-- Add node on cell state: forget×Cprev + i×candidate -->
+        <circle cx="460" cy="80" r="16" fill="#0d2d1c" stroke="#3ddc84" stroke-width="2"/>
+        <!-- override: the + node is at a separate x, shift right -->
+        <!-- actually the multiply (×) was at 460; + node at 540: -->
+        <circle cx="540" cy="80" r="16" fill="#0d2d1c" stroke="#3ddc84" stroke-width="2"/>
+        <text x="540" y="85" text-anchor="middle" font-family="'Space Mono',monospace" font-size="14" font-weight="700" fill="#3ddc84">+</text>
+
+        <!-- fix: move × node back to 460, update candidate arrow -->
+        <!-- line from × to + -->
+        <line x1="476" y1="80" x2="524" y2="80" stroke="#3ddc84" stroke-width="1.5" marker-end="url(#arr-green)"/>
+
+        <!-- ══════════════════════════════════
+             OUTPUT GATE  (x≈680)
+        ══════════════════════════════════ -->
+        <rect class="arch-gate" data-gate="output" x="640" y="150" width="130" height="100" rx="10"
+              fill="#1e1540" stroke="#9b7dff" stroke-width="1.5"/>
+        <text x="705" y="192" text-anchor="middle" font-family="'Syne',sans-serif" font-size="13" font-weight="700" fill="#9b7dff">Output Gate</text>
+        <text x="705" y="210" text-anchor="middle" font-family="'Space Mono',monospace" font-size="10" fill="#9b7dff" opacity="0.7">σ (sigmoid)</text>
+        <text x="705" y="230" text-anchor="middle" font-family="'Space Mono',monospace" font-size="10" fill="#9b7dff" opacity="0.6">→ [0 … 1]</text>
+
+        <!-- tanh of cell state box -->
+        <rect x="648" y="290" width="114" height="36" rx="8" fill="#1e1540" stroke="#9b7dff" stroke-width="1"/>
+        <text x="705" y="312" text-anchor="middle" font-family="'Space Mono',monospace" font-size="11" fill="#9b7dff">tanh(Cₜ)</text>
+
+        <!-- multiply node for output: tanh(Ct) × o -->
+        <circle cx="705" cy="390" r="16" fill="#1e1540" stroke="#9b7dff" stroke-width="2"/>
+        <text x="705" y="395" text-anchor="middle" font-family="'Space Mono',monospace" font-size="14" font-weight="700" fill="#9b7dff">×</text>
+
+        <!-- cell state → tanh box (dashed bend) -->
+        <path d="M 720 80 Q 800 80 800 200 Q 800 308 762 308" fill="none" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr-amber)"/>
+
+        <!-- output gate → tanh box arrow -->
+        <line x1="705" y1="250" x2="705" y2="290" stroke="#9b7dff" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+        <!-- tanh box → multiply node -->
+        <line x1="705" y1="326" x2="705" y2="374" stroke="#9b7dff" stroke-width="1.5" marker-end="url(#arr-purple)"/>
+
+        <!-- output (hidden state hₜ) going down from multiply node -->
+        <line x1="705" y1="406" x2="705" y2="450" stroke="#9b7dff" stroke-width="2" marker-end="url(#arr-purple)"/>
+        <rect x="646" y="450" width="118" height="22" rx="4" fill="#1e1540"/>
+        <text x="705" y="465" text-anchor="middle" font-family="'Space Mono',monospace" font-size="11" fill="#9b7dff">hₜ  (hidden state)</text>
+
+        <!-- oₜ label -->
+        <text x="720" y="275" text-anchor="start" font-family="'Space Mono',monospace" font-size="9" fill="#9b7dff" opacity="0.6">oₜ</text>
+
+        <!-- ══════════════════════════════════
+             SHARED INPUT BUS  (bottom)
+             x_t and h_{t-1} feed all gates
+        ══════════════════════════════════ -->
+        <!-- input bus horizontal line -->
+        <line x1="100" y1="360" x2="720" y2="360" stroke="#7a7899" stroke-width="1" stroke-dasharray="4 3"/>
+
+        <!-- xₜ box -->
+        <rect x="60" y="340" width="80" height="36" rx="8" fill="#1a1a28" stroke="#2a2a40" stroke-width="1"/>
+        <text x="100" y="362" text-anchor="middle" font-family="'Space Mono',monospace" font-size="12" fill="#e8e6ff">xₜ</text>
+        <text x="100" y="376" text-anchor="middle" font-family="'Space Mono',monospace" font-size="9" fill="#7a7899">current input</text>
+
+        <!-- hₜ₋₁ box -->
+        <rect x="60" y="390" width="80" height="36" rx="8" fill="#1a1a28" stroke="#2a2a40" stroke-width="1"/>
+        <text x="100" y="412" text-anchor="middle" font-family="'Space Mono',monospace" font-size="11" fill="#e8e6ff">hₜ₋₁</text>
+        <text x="100" y="426" text-anchor="middle" font-family="'Space Mono',monospace" font-size="9" fill="#7a7899">prev hidden</text>
+
+        <!-- vertical drops from bus to each gate -->
+        <!-- forget gate drop: bus x=205 → gate bottom -->
+        <line x1="205" y1="360" x2="205" y2="360" stroke="#7a7899" stroke-width="1"/>
+        <line x1="205" y1="280" x2="205" y2="360" stroke="#7a7899" stroke-width="1" stroke-dasharray="3 2"/>
+        <path d="M 140 360 L 205 360 L 205 250" fill="none" stroke="#7a7899" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr-gray)"/>
+
+        <!-- input gate drop -->
+        <path d="M 140 360 L 395 360 L 395 250" fill="none" stroke="#7a7899" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr-gray)"/>
+
+        <!-- candidate drop -->
+        <path d="M 140 360 L 555 360 L 555 250" fill="none" stroke="#7a7899" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr-gray)"/>
+
+        <!-- output gate drop -->
+        <path d="M 140 360 L 705 360 L 705 250" fill="none" stroke="#7a7899" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr-gray)"/>
+
+        <!-- xₜ → bus -->
+        <line x1="140" y1="358" x2="160" y2="358" stroke="#7a7899" stroke-width="1" marker-end="url(#arr-gray)"/>
+        <!-- hₜ₋₁ → bus (merge at 360 level via a small elbow) -->
+        <path d="M 140 408 L 155 408 L 155 360" fill="none" stroke="#7a7899" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arr-gray)"/>
+
+        <!-- ══ Annotations ══ -->
+        <text x="116" y="316" font-family="'Space Mono',monospace" font-size="10" fill="#7a7899">Inputs to all gates:</text>
+
+        <!-- forget × label near multiply node -->
+        <text x="160" y="72" font-family="'Space Mono',monospace" font-size="9" fill="#f5a623" opacity="0.7">fₜ × Cₜ₋₁</text>
+        <!-- + label -->
+        <text x="546" y="72" font-family="'Space Mono',monospace" font-size="9" fill="#3ddc84" opacity="0.7">new Cₜ</text>
+
+      </svg>
+    </div>
+
+    <!-- Tooltip descriptions -->
+    <div id="arch-tooltip" style="display:none;margin-top:16px;padding:16px 20px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-size:14px;line-height:1.65;color:#b0aed0;transition:all 0.2s;"></div>
+
+    <div style="margin-top:12px;font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">
+      ↑ Hover over any gate box to see what it does
+    </div>
+  </section>
+
+  <!-- SECTION 1: TWO MEMORIES -->
+  <section>
+    <h2>Two memory lanes</h2>
+    <p style="font-size:15px;color:#b0aed0;line-height:1.7;margin-bottom:20px;">
+      Every LSTM cell carries two streams of information across timesteps. Think of them as two kinds of memory your brain uses.
+    </p>
+    <div class="memory-row">
+      <div class="mem-label">Cell state</div>
+      <div class="mem-highway mem-cell">
+        <div class="mem-dot"></div>
+        Long-term memory — flows mostly unchanged, touched only by the gates
+      </div>
+    </div>
+    <div class="memory-row">
+      <div class="mem-label">Hidden state</div>
+      <div class="mem-highway mem-hidden">
+        <div class="mem-dot" style="animation-delay:0.5s"></div>
+        Short-term / working memory — the actual output passed to the next step
+      </div>
+    </div>
+    <div class="analogy" style="margin-top:20px">
+      <div class="analogy-title">📖 Analogy: Reading a novel</div>
+      <div class="analogy-text">
+        <strong>Cell state</strong> is like remembering that the main character is an orphan — a fact established on page 3 that matters 400 pages later.<br><br>
+        <strong>Hidden state</strong> is like your current understanding of the last paragraph you read — relevant right now, but replaced as you move on.
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 2: THE GATES -->
+  <section>
+    <h2>The four components</h2>
+    <p style="font-size:15px;color:#b0aed0;line-height:1.7;margin-bottom:20px;">
+      Each gate is a tiny neural network that outputs a value between 0 and 1 — a <strong style="color:var(--text)">dimmer switch</strong> for information flow. 0 means "block everything", 1 means "let everything through".
+    </p>
+    <div class="gates-grid">
+
+      <div class="gate-card gate-forget">
+        <span class="gate-icon">🗑️</span>
+        <div class="gate-name">Forget Gate</div>
+        <div class="gate-tagline">What to erase from long-term memory</div>
+        <div class="gate-desc">
+          Looks at the current input and the previous hidden state, then decides how much of the cell state (long-term memory) to throw away. A value near 0 means "forget this"; near 1 means "keep it".
+        </div>
+        <div class="gate-activation">⚙ sigmoid activation</div>
+      </div>
+
+      <div class="gate-card gate-input">
+        <span class="gate-icon">✏️</span>
+        <div class="gate-name">Input Gate</div>
+        <div class="gate-tagline">How much new info to store</div>
+        <div class="gate-desc">
+          Decides which new information is worth saving into long-term memory. It acts as a filter — even if candidate values are generated, this gate controls how much of them actually gets written.
+        </div>
+        <div class="gate-activation">⚙ sigmoid activation</div>
+      </div>
+
+      <div class="gate-card gate-candidate">
+        <span class="gate-icon">💡</span>
+        <div class="gate-name">Candidate Values</div>
+        <div class="gate-tagline">Draft of what could be remembered</div>
+        <div class="gate-desc">
+          Creates a fresh draft of potential new memories using a tanh function (outputs -1 to 1). The input gate then filters this draft before writing any of it into the cell state.
+        </div>
+        <div class="gate-activation">⚙ tanh activation</div>
+      </div>
+
+      <div class="gate-card gate-output">
+        <span class="gate-icon">📤</span>
+        <div class="gate-name">Output Gate</div>
+        <div class="gate-tagline">What to say out loud right now</div>
+        <div class="gate-desc">
+          Decides what part of the updated cell state should become the hidden state (working output). It squishes the cell state through tanh and filters it — producing the output for this timestep.
+        </div>
+        <div class="gate-activation">⚙ sigmoid + tanh</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 3: STEP BY STEP -->
+  <section>
+    <h2>Step-by-step walkthrough</h2>
+    <p style="font-size:15px;color:#b0aed0;line-height:1.7;margin-bottom:20px;">
+      Here's what happens inside one LSTM cell at a single timestep. Click through each step.
+    </p>
+
+    <div class="steps-container">
+      <div class="step-nav">
+        <button class="step-btn active" onclick="goStep(0)">① Inputs</button>
+        <button class="step-btn" onclick="goStep(1)">② Forget</button>
+        <button class="step-btn" onclick="goStep(2)">③ Candidate</button>
+        <button class="step-btn" onclick="goStep(3)">④ Write</button>
+        <button class="step-btn" onclick="goStep(4)">⑤ Output</button>
+      </div>
+
+      <div class="step-panel active" id="step-0">
+        <div class="step-inner">
+          <div class="step-number">STEP 01 / 05</div>
+          <div class="step-title" style="color:var(--text)">Inputs arrive</div>
+          <div class="step-body">
+            At every timestep, the LSTM receives two things: the <strong style="color:var(--green)">current input xₜ</strong> (the word, value, or feature at this moment) and the <strong style="color:var(--purple)">previous hidden state hₜ₋₁</strong> (what the cell "said" last time). These two are combined and fed into all gates simultaneously.
+          </div>
+          <div class="eq-row">
+            <div class="eq-box green-box">Current input  xₜ</div>
+            <div class="eq-op">+</div>
+            <div class="eq-box purple-box">Prev hidden  hₜ₋₁</div>
+            <div class="eq-op">→</div>
+            <div class="eq-box gray-box">All gates</div>
+          </div>
+          <div class="eq-result">Example: processing the word "Paris" after reading "She moved to"</div>
+        </div>
+      </div>
+
+      <div class="step-panel" id="step-1">
+        <div class="step-inner">
+          <div class="step-number">STEP 02 / 05</div>
+          <div class="step-title" style="color:var(--amber)">Forget gate decides what to erase</div>
+          <div class="step-body">
+            The forget gate looks at the inputs and produces a number between 0 and 1 for each piece of information in the cell state. Values close to 0 get erased; values close to 1 are preserved. This is how the LSTM "forgets" outdated context.
+          </div>
+          <div class="eq-row">
+            <div class="eq-box amber-box">f = sigmoid(W·[hₜ₋₁, xₜ])</div>
+            <div class="eq-op">→</div>
+            <div class="eq-box amber-box">Cₜ₋₁ × f</div>
+          </div>
+          <div class="eq-result">If the subject changed from "he" to "she", the gender info in memory gets forgotten</div>
+        </div>
+      </div>
+
+      <div class="step-panel" id="step-2">
+        <div class="step-inner">
+          <div class="step-number">STEP 03 / 05</div>
+          <div class="step-title" style="color:var(--teal)">Candidate values are proposed</div>
+          <div class="step-body">
+            A tanh layer creates a vector of <em>candidate new memories</em> — things that could potentially be stored. These are raw proposals; the input gate will decide how many of these to actually write. tanh outputs range from -1 to 1, encoding direction and magnitude.
+          </div>
+          <div class="eq-row">
+            <div class="eq-box teal-box">C̃ = tanh(W·[hₜ₋₁, xₜ])</div>
+          </div>
+          <div class="eq-result">Draft: "The subject is now in Paris, in France, in Europe…"</div>
+        </div>
+      </div>
+
+      <div class="step-panel" id="step-3">
+        <div class="step-inner">
+          <div class="step-number">STEP 04 / 05</div>
+          <div class="step-title" style="color:var(--green)">Input gate writes to cell state</div>
+          <div class="step-body">
+            The input gate (sigmoid) decides how much of the candidate values to write. It multiplies with the candidates, then that result is added to the already-filtered old cell state. This produces the <strong style="color:var(--amber)">updated cell state Cₜ</strong> — the new long-term memory.
+          </div>
+          <div class="eq-row">
+            <div class="eq-box amber-box">Cₜ₋₁ × f</div>
+            <div class="eq-op">+</div>
+            <div class="eq-box green-box">i × C̃</div>
+            <div class="eq-op">=</div>
+            <div class="eq-box amber-box">New Cₜ</div>
+          </div>
+          <div class="eq-result">Old memory (partially erased) + new memory (partially written) = updated cell state</div>
+        </div>
+      </div>
+
+      <div class="step-panel" id="step-4">
+        <div class="step-inner">
+          <div class="step-number">STEP 05 / 05</div>
+          <div class="step-title" style="color:var(--purple)">Output gate produces the hidden state</div>
+          <div class="step-body">
+            The output gate decides what to actually output from the cell state. It squishes the cell state through tanh (to get values between -1 and 1), then filters it with a sigmoid gate. The result is the new <strong style="color:var(--purple)">hidden state hₜ</strong> — both the output of this step and the "working memory" passed to the next step.
+          </div>
+          <div class="eq-row">
+            <div class="eq-box purple-box">o = sigmoid(W·[hₜ₋₁, xₜ])</div>
+          </div>
+          <div class="eq-row">
+            <div class="eq-box purple-box">hₜ = o × tanh(Cₜ)</div>
+          </div>
+          <div class="eq-result">Output: the cell's summarized understanding, ready for the next word or the final prediction</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION 4: INTERACTIVE DEMO -->
+  <section>
+    <h2>Try it — gate simulator</h2>
+    <div class="demo-card">
+      <div class="demo-desc">
+        Move the sliders to see how different gate values affect the LSTM's memory and output. This simulates what happens at one timestep.
+      </div>
+      <div class="sliders">
+        <div class="slider-row s-forget">
+          <div class="slider-label">
+            <span class="slider-name" style="color:var(--amber)">🗑 Forget gate (f)</span>
+            <span class="slider-val amber-box" id="fv">0.30</span>
+          </div>
+          <input type="range" min="0" max="100" value="30" oninput="updateSim('f', this.value)">
+        </div>
+        <div class="slider-row s-input">
+          <div class="slider-label">
+            <span class="slider-name" style="color:var(--green)">✏ Input gate (i)</span>
+            <span class="slider-val green-box" id="iv">0.80</span>
+          </div>
+          <input type="range" min="0" max="100" value="80" oninput="updateSim('i', this.value)">
+        </div>
+        <div class="slider-row s-output">
+          <div class="slider-label">
+            <span class="slider-name" style="color:var(--purple)">📤 Output gate (o)</span>
+            <span class="slider-val purple-box" id="ov">0.60</span>
+          </div>
+          <input type="range" min="0" max="100" value="60" oninput="updateSim('o', this.value)">
+        </div>
+      </div>
+
+      <div class="demo-result">
+        <div class="result-title">Result at this timestep</div>
+        <div class="result-bars">
+          <div class="r-bar-row">
+            <div class="r-bar-label">Old mem kept</div>
+            <div class="r-bar-track"><div class="r-bar-fill" id="bar-forget" style="background:var(--amber);width:30%"></div></div>
+            <div class="r-bar-pct" id="pct-forget" style="color:var(--amber)">30%</div>
+          </div>
+          <div class="r-bar-row">
+            <div class="r-bar-label">New info written</div>
+            <div class="r-bar-track"><div class="r-bar-fill" id="bar-input" style="background:var(--green);width:80%"></div></div>
+            <div class="r-bar-pct" id="pct-input" style="color:var(--green)">80%</div>
+          </div>
+          <div class="r-bar-row">
+            <div class="r-bar-label">Cell state</div>
+            <div class="r-bar-track"><div class="r-bar-fill" id="bar-cell" style="background:var(--amber);width:55%"></div></div>
+            <div class="r-bar-pct" id="pct-cell" style="color:var(--amber)">55%</div>
+          </div>
+          <div class="r-bar-row">
+            <div class="r-bar-label">Hidden output</div>
+            <div class="r-bar-track"><div class="r-bar-fill" id="bar-hidden" style="background:var(--purple);width:33%"></div></div>
+            <div class="r-bar-pct" id="pct-hidden" style="color:var(--purple)">33%</div>
+          </div>
+        </div>
+        <div id="sim-insight" style="margin-top:16px;font-size:13px;color:var(--muted);font-style:italic;line-height:1.6;font-family:'Space Mono',monospace;padding:12px;background:var(--surface2);border-radius:6px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5: RNN vs LSTM -->
+  <section>
+    <h2>Why not just RNN?</h2>
+    <p style="font-size:15px;color:#b0aed0;line-height:1.7;margin-bottom:20px;">
+      Regular RNNs have one fatal flaw: the <strong style="color:var(--red)">vanishing gradient</strong> problem. LSTMs were designed specifically to fix it.
+    </p>
+    <div class="compare-grid">
+      <div class="compare-card compare-rnn">
+        <div class="compare-name">🔴 Vanilla RNN</div>
+        <div class="compare-point"><span class="cpt">✗</span> Gradients vanish over long sequences — it "forgets" early inputs</div>
+        <div class="compare-point"><span class="cpt">✗</span> Can't learn dependencies spanning more than ~10 steps</div>
+        <div class="compare-point"><span class="cpt">✗</span> Single hidden state = memory AND output mixed together</div>
+        <div class="compare-point"><span class="cpt">✗</span> No control over what to remember or forget</div>
+      </div>
+      <div class="compare-card compare-lstm">
+        <div class="compare-name">🟢 LSTM</div>
+        <div class="compare-point"><span class="cpt">✓</span> Cell state acts as a gradient highway — errors flow back hundreds of steps</div>
+        <div class="compare-point"><span class="cpt">✓</span> Learns long-range dependencies (e.g., matching "The cats… were")</div>
+        <div class="compare-point"><span class="cpt">✓</span> Separates long-term (cell) and short-term (hidden) memory</div>
+        <div class="compare-point"><span class="cpt">✓</span> Gates give explicit control over information flow</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: REAL-WORLD USES -->
+  <section>
+    <h2>Where LSTMs are used</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+      <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+        <div style="font-size:24px;margin-bottom:8px;">💬</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Language models</div>
+        <div style="font-size:13px;color:var(--muted);">Early text generation, translation, and autocomplete before transformers</div>
+      </div>
+      <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+        <div style="font-size:24px;margin-bottom:8px;">📈</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Time series</div>
+        <div style="font-size:13px;color:var(--muted);">Stock prices, sensor data, weather forecasting</div>
+      </div>
+      <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+        <div style="font-size:24px;margin-bottom:8px;">🎵</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Audio / music</div>
+        <div style="font-size:13px;color:var(--muted);">Speech recognition, music generation</div>
+      </div>
+      <div style="padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+        <div style="font-size:24px;margin-bottom:8px;">🧬</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Bioinformatics</div>
+        <div style="font-size:13px;color:var(--muted);">DNA/protein sequence modeling</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  Built as an interactive LSTM explainer · Long Short-Term Memory · Hochreiter &amp; Schmidhuber, 1997
+</footer>
+
+<script>
+  // ── Architecture gate hover ──
+  const gateInfo = {
+    forget: {
+      color: '#f5a623',
+      title: '🗑 Forget Gate  —  fₜ = σ(Wf · [hₜ₋₁, xₜ] + bf)',
+      body: 'Produces a number between 0 and 1 for every slot in the cell state. Multiplied directly with the old cell state Cₜ₋₁. A value of 0 = completely erase that memory; 1 = keep it perfectly. Example: when the subject of a sentence changes, the LSTM forgets the old subject\'s gender via this gate.'
+    },
+    input: {
+      color: '#3ddc84',
+      title: '✏ Input Gate  —  iₜ = σ(Wi · [hₜ₋₁, xₜ] + bi)',
+      body: 'Another 0–1 filter. Decides how much of the candidate values (the "draft memories") to actually write into the cell state. Works together with the Candidate Values layer — input gate controls the volume, candidate values provide the content.'
+    },
+    candidate: {
+      color: '#00c9b1',
+      title: '💡 Candidate Values  —  C̃ₜ = tanh(Wc · [hₜ₋₁, xₜ] + bc)',
+      body: 'Creates a draft of what new information could be stored, using tanh (range -1 to 1). This raw draft is then gated by the input gate before being added to the cell state. Think of it as writing a note in pencil — the input gate decides whether to press hard or barely mark the page.'
+    },
+    output: {
+      color: '#9b7dff',
+      title: '📤 Output Gate  —  oₜ = σ(Wo · [hₜ₋₁, xₜ] + bo)  →  hₜ = oₜ × tanh(Cₜ)',
+      body: 'Decides what part of the updated cell state to expose as the hidden state hₜ. First the cell state is squished through tanh (to bound the values), then the output gate filters it. hₜ is both the output for this timestep and the working memory passed to the next cell.'
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.arch-gate').forEach(el => {
+      el.style.cursor = 'pointer';
+      el.addEventListener('mouseenter', () => {
+        const gate = el.dataset.gate;
+        const info = gateInfo[gate];
+        const tip = document.getElementById('arch-tooltip');
+        tip.style.display = 'block';
+        tip.style.borderColor = info.color;
+        tip.innerHTML = `<div style="font-size:14px;font-weight:700;color:${info.color};margin-bottom:8px;font-family:'Syne',sans-serif">${info.title}</div><div>${info.body}</div>`;
+        el.setAttribute('opacity', '0.75');
+      });
+      el.addEventListener('mouseleave', () => {
+        el.removeAttribute('opacity');
+      });
+    });
+  });
+
+  // ── Step navigation ──
+  function goStep(n) {
+    document.querySelectorAll('.step-panel').forEach((p,i) => p.classList.toggle('active', i===n));
+    document.querySelectorAll('.step-btn').forEach((b,i) => b.classList.toggle('active', i===n));
+  }
+
+  // ── Slider simulator ──
+  const state = { f: 0.30, i: 0.80, o: 0.60 };
+
+  function updateSim(key, rawVal) {
+    const v = rawVal / 100;
+    state[key] = v;
+
+    // update displayed val
+    const labels = { f:'fv', i:'iv', o:'ov' };
+    document.getElementById(labels[key]).textContent = v.toFixed(2);
+
+    // update slider gradient
+    const tracks = { f:'s-forget', i:'s-input', o:'s-output' };
+    const sliders = document.querySelectorAll(`.${tracks[key]} input[type=range]`);
+    sliders.forEach(s => s.style.setProperty('--pct', rawVal+'%'));
+
+    compute();
+  }
+
+  function compute() {
+    const f = state.f, i = state.i, o = state.o;
+    const candidate = 0.75; // fixed candidate tanh value
+    const prevCell  = 0.60; // fixed previous cell state
+
+    const cell = f * prevCell + i * candidate;
+    const hidden = o * Math.tanh(cell);
+
+    const cellPct   = Math.min(100, Math.round(cell * 100));
+    const hiddenPct = Math.min(100, Math.round(Math.abs(hidden) * 100));
+    const forgetPct = Math.round(f * 100);
+    const inputPct  = Math.round(i * 100);
+
+    setBar('forget', forgetPct);
+    setBar('input',  inputPct);
+    setBar('cell',   cellPct);
+    setBar('hidden', hiddenPct);
+
+    // Insight text
+    let insight = '';
+    if (f < 0.2 && i > 0.7) insight = '🔄 Heavy rewrite — almost all old memory erased, fresh information dominates.';
+    else if (f > 0.8 && i < 0.2) insight = '📦 Strong preservation — mostly holding onto what was already known.';
+    else if (o < 0.2) insight = '🤫 Output gate nearly closed — rich internal state, but saying almost nothing.';
+    else if (o > 0.8 && cellPct > 60) insight = '📢 High output — cell state is full and being broadcast strongly.';
+    else if (f < 0.4 && i < 0.4) insight = '😴 Low activity — memory is shrinking and little new info is being written.';
+    else insight = `Cell retains ${forgetPct}% of old memory and writes ${inputPct}% of new info → outputs ${hiddenPct}% of cell state.`;
+
+    document.getElementById('sim-insight').textContent = insight;
+  }
+
+  function setBar(id, pct) {
+    document.getElementById('bar-'+id).style.width = pct+'%';
+    document.getElementById('pct-'+id).textContent = pct+'%';
+  }
+
+  // init sliders gradient
+  document.querySelectorAll('.s-forget input').forEach(s => s.style.setProperty('--pct','30%'));
+  document.querySelectorAll('.s-input  input').forEach(s => s.style.setProperty('--pct','80%'));
+  document.querySelectorAll('.s-output input').forEach(s => s.style.setProperty('--pct','60%'));
+
+  // init compute
+  compute();
+</script>
+</body>
+</html>
