@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java DSA Cheat Sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --border: #e2e8f0;
+    
+    --badge-blue-bg: #dbeafe;
+    --badge-blue-txt: #1e40af;
+    --badge-green-bg: #dcfce7;
+    --badge-green-txt: #166534;
+    --badge-amber-bg: #fef3c7;
+    --badge-amber-txt: #92400e;
+    --badge-purple-bg: #f3e8ff;
+    --badge-purple-txt: #6b21a8;
+    --badge-red-bg: #fee2e2;
+    --badge-red-txt: #991b1b;
+    
+    --code-bg: #1e293b;
+    --code-txt: #e2e8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 950px;
+    margin: 0 auto;
+    font-size: 15px;
+  }
+
+  .header { margin-bottom: 2rem; }
+  .header h2 { font-size: 28px; font-weight: 600; color: var(--text-main); letter-spacing: -0.5px; margin-bottom: 6px; }
+  .header p { color: var(--text-muted); font-size: 15px; }
+
+  .method-nav {
+    display: flex; gap: 10px; margin-bottom: 2rem; flex-wrap: wrap;
+    border-bottom: 2px solid var(--border); padding-bottom: 1rem;
+  }
+
+  .mnav {
+    padding: 8px 18px; border-radius: 99px; border: 1px solid var(--border);
+    font-size: 14px; font-family: 'Inter', sans-serif; font-weight: 500;
+    cursor: pointer; background: var(--bg-card); color: var(--text-muted);
+    transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .mnav:hover { border-color: var(--primary); color: var(--primary); }
+  .mnav.active {
+    background: var(--primary); color: white; border-color: var(--primary);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+  }
+
+  .pane { display: none; animation: fadeIn 0.4s ease; }
+  .pane.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-title { font-size: 17px; font-weight: 600; margin-bottom: 12px; color: var(--text-main); }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 10px;
+    border-radius: 6px; margin-right: 6px; margin-bottom: 12px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  .b-blue { background: var(--badge-blue-bg); color: var(--badge-blue-txt); }
+  .b-green { background: var(--badge-green-bg); color: var(--badge-green-txt); }
+  .b-amber { background: var(--badge-amber-bg); color: var(--badge-amber-txt); }
+  .b-purple { background: var(--badge-purple-bg); color: var(--badge-purple-txt); }
+  .b-red { background: var(--badge-red-bg); color: var(--badge-red-txt); }
+
+  pre {
+    background: var(--code-bg); color: var(--code-txt); border-radius: 8px;
+    padding: 1.25rem; font-family: 'Fira Code', monospace; font-size: 13.5px;
+    overflow-x: auto; line-height: 1.7; border: 1px solid #334155; margin-bottom: 8px;
+  }
+
+  .kw { color: #c678dd; } /* Keywords */
+  .str { color: #98c379; } /* Strings */
+  .cm { color: #94a3b8; font-style: italic; } /* Comments */
+  .num { color: #d19a66; } /* Numbers */
+  .tp { color: #e5c07b; } /* Types/Classes */
+  .op { color: #56b6c2; } /* Operators */
+
+  .note {
+    font-size: 13.5px; color: var(--text-main); background: #f1f5f9;
+    padding: 12px 16px; border-left: 4px solid var(--badge-blue-txt);
+    border-radius: 0 6px 6px 0; margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2>Java DSA Core Cheat Sheet</h2>
+  <p>Essential predefined methods and structural conversions for fast coding 🚀</p>
+</div>
+
+<div class="method-nav">
+  <button class="mnav active" onclick="show('arrays', event)">Arrays & Collections</button>
+  <button class="mnav" onclick="show('datastructures', event)">Data Structures</button>
+  <button class="mnav" onclick="show('stringsmath', event)">Strings & Math</button>
+  <button class="mnav" onclick="show('conversions', event)">Type Conversions</button>
+</div>
+
+<div id="arrays" class="pane active">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">Arrays Methods</div>
+      <span class="badge b-blue">java.util.Arrays</span>
+      <pre><span class="kw">int</span>[] arr = {<span class="num">5</span>, <span class="num">2</span>, <span class="num">9</span>, <span class="num">1</span>, <span class="num">3</span>};
+
+<span class="cm">// Sort array (O(N log N))</span>
+<span class="tp">Arrays</span>.sort(arr);
+
+<span class="cm">// Print array</span>
+<span class="tp">System</span>.out.println(<span class="tp">Arrays</span>.toString(arr));
+
+<span class="cm">// Binary search (Array MUST be sorted first)</span>
+<span class="kw">int</span> index = <span class="tp">Arrays</span>.binarySearch(arr, <span class="num">3</span>);
+
+<span class="cm">// Fill array with a specific value</span>
+<span class="tp">Arrays</span>.fill(arr, <span class="num">10</span>);
+
+<span class="cm">// Compare two arrays</span>
+<span class="kw">int</span>[] arr2 = {<span class="num">10</span>, <span class="num">10</span>, <span class="num">10</span>, <span class="num">10</span>, <span class="num">10</span>};
+<span class="kw">boolean</span> isSame = <span class="tp">Arrays</span>.equals(arr, arr2);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Collections Methods</div>
+      <span class="badge b-purple">java.util.Collections</span>
+      <pre><span class="tp">List</span>&lt;<span class="tp">Integer</span>&gt; list = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;(<span class="tp">Arrays</span>.asList(<span class="num">5</span>,<span class="num">2</span>,<span class="num">9</span>,<span class="num">1</span>,<span class="num">3</span>));
+
+<span class="cm">// Sort and reverse</span>
+<span class="tp">Collections</span>.sort(list); 
+<span class="tp">Collections</span>.reverse(list);
+
+<span class="cm">// Min and Max elements</span>
+<span class="kw">int</span> max = <span class="tp">Collections</span>.max(list);
+<span class="kw">int</span> min = <span class="tp">Collections</span>.min(list);
+
+<span class="cm">// Find occurrences of a specific element</span>
+<span class="kw">int</span> count = <span class="tp">Collections</span>.frequency(list, <span class="num">3</span>);
+
+<span class="cm">// Randomly shuffle list elements</span>
+<span class="tp">Collections</span>.shuffle(list);</pre>
+    </div>
+  </div>
+</div>
+
+<div id="datastructures" class="pane">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">ArrayList (Dynamic Array)</div>
+      <span class="badge b-green">O(1) Access</span>
+      <pre><span class="tp">ArrayList</span>&lt;<span class="tp">Integer</span>&gt; al = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
+
+al.add(<span class="num">10</span>); <span class="cm">// append to end</span>
+al.add(<span class="num">1</span>, <span class="num">20</span>); <span class="cm">// insert at index 1</span>
+
+al.remove(<span class="num">1</span>); <span class="cm">// remove by index</span>
+al.set(<span class="num">0</span>, <span class="num">100</span>); <span class="cm">// update value at index</span>
+
+<span class="kw">int</span> val = al.get(<span class="num">0</span>); <span class="cm">// access element</span>
+<span class="kw">int</span> size = al.size(); <span class="cm">// get length</span>
+<span class="kw">boolean</span> hasVal = al.contains(<span class="num">100</span>);</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">HashMap (Key-Value Pairs)</div>
+      <span class="badge b-green">O(1) Lookup</span>
+      <pre><span class="tp">HashMap</span>&lt;<span class="tp">Integer</span>, <span class="tp">String</span>&gt; map = <span class="kw">new</span> <span class="tp">HashMap</span>&lt;&gt;();
+
+map.put(<span class="num">1</span>, <span class="str">"A"</span>); <span class="cm">// insert/update</span>
+map.put(<span class="num">2</span>, <span class="str">"B"</span>);
+
+<span class="tp">String</span> val = map.get(<span class="num">1</span>); <span class="cm">// returns "A"</span>
+<span class="kw">boolean</span> hasKey = map.containsKey(<span class="num">2</span>);
+map.remove(<span class="num">2</span>);
+
+<span class="cm">// Iterating Map</span>
+<span class="kw">for</span> (<span class="tp">Map.Entry</span>&lt;<span class="tp">Integer</span>, <span class="tp">String</span>&gt; entry : map.entrySet()) {
+    <span class="tp">System</span>.out.println(entry.getKey() + <span class="str">" -> "</span> + entry.getValue());
+}</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Stack (LIFO)</div>
+      <span class="badge b-amber">Last In, First Out</span>
+      <pre><span class="tp">Stack</span>&lt;<span class="tp">Integer</span>&gt; st = <span class="kw">new</span> <span class="tp">Stack</span>&lt;&gt;();
+
+st.push(<span class="num">10</span>); <span class="cm">// add to top</span>
+st.push(<span class="num">20</span>);
+
+<span class="kw">int</span> top = st.pop(); <span class="cm">// remove and return top (20)</span>
+<span class="kw">int</span> peek = st.peek(); <span class="cm">// view top without removing (10)</span>
+<span class="kw">boolean</span> empty = st.isEmpty();</pre>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Queue (FIFO)</div>
+      <span class="badge b-amber">First In, First Out</span>
+      <pre><span class="cm">// Implemented using LinkedList</span>
+<span class="tp">Queue</span>&lt;<span class="tp">Integer</span>&gt; q = <span class="kw">new</span> <span class="tp">LinkedList</span>&lt;&gt;();
+
+q.add(<span class="num">10</span>); <span class="cm">// add to rear</span>
+q.add(<span class="num">20</span>);
+
+<span class="kw">int</span> front = q.poll(); <span class="cm">// remove and return front (10)</span>
+<span class="kw">int</span> peek = q.peek(); <span class="cm">// view front without removing (20)</span></pre>
+    </div>
+  </div>
+</div>
+
+<div id="stringsmath" class="pane">
+  <div class="grid">
+    <div class="card">
+      <div class="card-title">String Methods</div>
+      <span class="badge b-blue">Immutable</span>
+      <pre><span class="tp">String</span> s = <span class="str">"hello world"</span>;
+
+<span class="kw">int</span> len = s.length();
+<span class="kw">char</span> c = s.charAt(<span class="num">1</span>); <span class="cm">// 'e'</span>
+<span class="tp">String</span> sub = s.substring(<span class="num">0</span>, <span class="num">5</span>); <span class="cm">// "hello"</span>
+
+<span class="kw">boolean</span> match = s.equals(<span class="str">"hello world"</span>);
+<span class="kw">boolean</span> has = s.contains(<span class="str">"world"</span>);
+<span class="kw">int</span> idx = s.indexOf(<span class="str">'o'</span>); <span class="cm">// 4</span>
+
+<span class="cm">// Split into array</span>
+<span class="tp">String</span>[] words = s.split(<span class="str">" "</span>); 
+
+<span class="cm">// Sort a string</span>
+<span class="kw">char</span>[] chars = s.toCharArray();
+<span class="tp">Arrays</span>.sort(chars);
+<span class="tp">String</span> sortedStr = <span class="kw">new</span> <span class="tp">String</span>(chars);</pre>
+      <div class="note"><strong>Tip:</strong> If you are modifying a string inside a loop, always use <code>StringBuilder</code> to avoid Time Limit Exceeded (TLE) errors.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Math Methods</div>
+      <span class="badge b-purple">java.lang.Math</span>
+      <pre><span class="cm">// Basic operations</span>
+<span class="tp">Math</span>.max(<span class="num">5</span>, <span class="num">10</span>);    <span class="cm">// 10</span>
+<span class="tp">Math</span>.min(<span class="num">5</span>, <span class="num">10</span>);    <span class="cm">// 5</span>
+<span class="tp">Math</span>.abs(<span class="op">-</span><span class="num">7</span>);       <span class="cm">// 7 (Absolute)</span>
+
+<span class="cm">// Power & Roots</span>
+<span class="tp">Math</span>.sqrt(<span class="num">16</span>);      <span class="cm">// 4.0</span>
+<span class="tp">Math</span>.pow(<span class="num">2</span>, <span class="num">3</span>);     <span class="cm">// 8.0</span>
+
+<span class="cm">// Rounding</span>
+<span class="tp">Math</span>.ceil(<span class="num">2.3</span>);     <span class="cm">// 3.0 (Round up)</span>
+<span class="tp">Math</span>.floor(<span class="num">2.9</span>);    <span class="cm">// 2.0 (Round down)</span>
+
+<span class="cm">// Random number (0.0 to 1.0)</span>
+<span class="tp">Math</span>.random();</pre>
+    </div>
+  </div>
+</div>
+
+<div id="conversions" class="pane">
+  <div class="card">
+    <div class="card-title">Crucial Type Conversions</div>
+    <span class="badge b-red">Must Know for Assessments</span>
+    <pre><span class="cm">// 1. String ↔ Integer</span>
+<span class="kw">int</span> num = <span class="tp">Integer</span>.parseInt(<span class="str">"123"</span>); 
+<span class="tp">String</span> backToStr = <span class="tp">String</span>.valueOf(num); 
+
+<span class="cm">// 2. String ↔ Char Array</span>
+<span class="kw">char</span>[] charArr = <span class="str">"hello"</span>.toCharArray(); 
+<span class="tp">String</span> strAgain = <span class="kw">new</span> <span class="tp">String</span>(charArr); 
+
+<span class="cm">// 3. Object Array ↔ List</span>
+<span class="tp">Integer</span>[] arrObj = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+<span class="tp">List</span>&lt;<span class="tp">Integer</span>&gt; listFromArr = <span class="tp">Arrays</span>.asList(arrObj); 
+<span class="tp">Integer</span>[] arrayFromList = listFromArr.toArray(<span class="kw">new</span> <span class="tp">Integer</span>[<span class="num">0</span>]); 
+
+<span class="cm">// 4. Primitive Array ↔ List (Important ⚠️)</span>
+<span class="kw">int</span>[] primArr = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>};
+<span class="cm">// Cannot use Arrays.asList() for primitives! Must use a loop or streams.</span>
+<span class="tp">List</span>&lt;<span class="tp">Integer</span>&gt; primList = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;();
+<span class="kw">for</span> (<span class="kw">int</span> val : primArr) primList.add(val);
+
+<span class="cm">// 5. List ↔ Set (Great for removing duplicates)</span>
+<span class="tp">List</span>&lt;<span class="tp">Integer</span>&gt; listDupes = <span class="tp">Arrays</span>.asList(<span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>);
+<span class="tp">Set</span>&lt;<span class="tp">Integer</span>&gt; set = <span class="kw">new</span> <span class="tp">HashSet</span>&lt;&gt;(listDupes); 
+<span class="tp">List</span>&lt;<span class="tp">Integer</span>&gt; listClean = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;(set); 
+
+<span class="cm">// 6. Map Keys/Values → List</span>
+<span class="tp">List</span>&lt;<span class="tp">Integer</span>&gt; keys = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;(map.keySet()); 
+<span class="tp">List</span>&lt;<span class="tp">String</span>&gt; values = <span class="kw">new</span> <span class="tp">ArrayList</span>&lt;&gt;(map.values()); 
+
+<span class="cm">// 7. Binary String ↔ Integer</span>
+<span class="kw">int</span> decimal = <span class="tp">Integer</span>.parseInt(<span class="str">"1010"</span>, <span class="num">2</span>); <span class="cm">// returns 10</span>
+<span class="tp">String</span> binary = <span class="tp">Integer</span>.toBinaryString(<span class="num">10</span>); <span class="cm">// returns "1010"</span></pre>
+  </div>
+</div>
+
+<script>
+function show(id, event){
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.mnav').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>

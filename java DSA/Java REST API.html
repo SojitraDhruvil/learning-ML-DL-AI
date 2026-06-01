@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java REST API — HackerRank Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --border: #e2e8f0;
+    
+    --badge-blue-bg: #dbeafe;
+    --badge-blue-txt: #1e40af;
+    --badge-green-bg: #dcfce7;
+    --badge-green-txt: #166534;
+    --badge-amber-bg: #fef3c7;
+    --badge-amber-txt: #92400e;
+    --badge-red-bg: #fee2e2;
+    --badge-red-txt: #991b1b;
+    
+    --code-bg: #1e293b;
+    --code-txt: #e2e8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .header h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .header p {
+    color: var(--text-muted);
+    font-size: 15px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 1rem;
+  }
+
+  .tab {
+    padding: 8px 20px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .tab:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .tab.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+  }
+
+  .section {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .section.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-main);
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-right: 8px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-blue { background: var(--badge-blue-bg); color: var(--badge-blue-txt); }
+  .badge-green { background: var(--badge-green-bg); color: var(--badge-green-txt); }
+  .badge-amber { background: var(--badge-amber-bg); color: var(--badge-amber-txt); }
+  .badge-red { background: var(--badge-red-bg); color: var(--badge-red-txt); }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-txt);
+    border-radius: 8px;
+    padding: 1.25rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    overflow-x: auto;
+    line-height: 1.6;
+    margin-top: 8px;
+    border: 1px solid #334155;
+  }
+
+  .label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-top: 16px;
+    margin-bottom: -4px;
+  }
+
+  .note {
+    font-size: 14px;
+    color: var(--text-muted);
+    background: #f1f5f9;
+    padding: 12px 16px;
+    border-left: 4px solid var(--primary);
+    border-radius: 0 6px 6px 0;
+    margin-top: 20px;
+  }
+
+  .ask-btn {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .ask-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2>Java REST API — HackerRank prep</h2>
+  <p>Focus areas based on common assessment patterns</p>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('http', event)">HTTP calls</button>
+  <button class="tab" onclick="show('json', event)">JSON parsing</button>
+  <button class="tab" onclick="show('filter', event)">Filter & sort</button>
+  <button class="tab" onclick="show('stream', event)">Streams</button>
+  <button class="tab" onclick="show('pattern', event)">Task patterns</button>
+</div>
+
+<div id="http" class="section active">
+  <div class="card">
+    <div class="card-title">Making GET requests</div>
+    <span class="badge badge-blue">HttpClient (Java 11+)</span>
+    <span class="badge badge-green">Most common</span>
+    <div class="label">Basic GET request</div>
+    <pre>import java.net.http.*;
+import java.net.URI;
+
+HttpClient client = HttpClient.newHttpClient();
+
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create("https://api.example.com/users"))
+    .header("Accept", "application/json")
+    .GET()
+    .build();
+
+HttpResponse&lt;String&gt; response =
+    client.send(request, HttpResponse.BodyHandlers.ofString());
+
+int statusCode = response.statusCode();  // 200, 404, etc.
+String body = response.body();           // raw JSON string</pre>
+    <div class="note"><strong>Tip:</strong> HackerRank gives you the API URL. You call it, parse the response body, then compute the answer.</div>
+    <button class="ask-btn" onclick="sendPrompt('Show me a full HackerRank-style Java REST problem with HttpClient and solution')">Show full example ↗</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Handling query parameters</div>
+    <span class="badge badge-amber">Often Needed</span>
+    <pre>String url = "https://api.example.com/posts?userId=1&status=active";
+
+HttpRequest request = HttpRequest.newBuilder()
+    .uri(URI.create(url))
+    .GET()
+    .build();</pre>
+    <div class="note">Just build the URL string with params appended. No special library needed.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Checking status codes</div>
+    <pre>if (response.statusCode() == 200) {
+    String json = response.body();
+    // parse and process
+} else {
+    System.out.println("Error: " + response.statusCode());
+}</pre>
+    <div class="note">Always check status before parsing. 200 = OK, 404 = not found, 500 = server error.</div>
+  </div>
+</div>
+
+<div id="json" class="section">
+  <div class="card">
+    <div class="card-title">Parsing JSON with org.json</div>
+    <span class="badge badge-blue">Available Environment</span>
+    <span class="badge badge-green">Easiest approach</span>
+    <pre>import org.json.JSONArray;
+import org.json.JSONObject;
+
+String jsonStr = response.body();
+
+// Parse a JSON object
+JSONObject obj = new JSONObject(jsonStr);
+String name = obj.getString("name");
+int age  = obj.getInt("age");
+boolean active = obj.getBoolean("active");
+
+// Parse a JSON array
+JSONArray arr = new JSONArray(jsonStr);
+for (int i = 0; i &lt; arr.length(); i++) {
+    JSONObject item = arr.getJSONObject(i);
+    System.out.println(item.getString("title"));
+}</pre>
+    <div class="note">Most HackerRank problems return a JSON array of objects. Loop through it with the pattern above.</div>
+    <button class="ask-btn" onclick="sendPrompt('Give me a practice problem: fetch a JSON array from an API and count items matching a condition in Java')">Practice problem ↗</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Nested JSON access</div>
+    <pre>// JSON: { "user": { "address": { "city": "Mumbai" } } }
+JSONObject user = obj.getJSONObject("user");
+JSONObject address = user.getJSONObject("address");
+String city = address.getString("city");
+
+// JSON array inside object
+// { "tags": ["java", "api", "rest"] }
+JSONArray tags = obj.getJSONArray("tags");
+String first = tags.getString(0);</pre>
+    <div class="note">Chain .getJSONObject() and .getJSONArray() to drill into nested structures.</div>
+  </div>
+</div>
+
+<div id="filter" class="section">
+  <div class="card">
+    <div class="card-title">Filter a list from API response</div>
+    <span class="badge badge-blue">High Probability</span>
+    <pre>JSONArray arr = new JSONArray(response.body());
+List&lt;String&gt; result = new ArrayList&lt;&gt;();
+
+for (int i = 0; i &lt; arr.length(); i++) {
+    JSONObject item = arr.getJSONObject(i);
+    
+    // Filter: only active users in city "Delhi"
+    if (item.getString("city").equals("Delhi")
+        &amp;&amp; item.getBoolean("active")) {
+        result.add(item.getString("name"));
+    }
+}
+System.out.println(result.size());</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sort by a field</div>
+    <pre>List&lt;JSONObject&gt; list = new ArrayList&lt;&gt;();
+for (int i = 0; i &lt; arr.length(); i++)
+    list.add(arr.getJSONObject(i));
+
+// Sort by "salary" descending
+list.sort((a, b) ->
+    b.getInt("salary") - a.getInt("salary")
+);
+
+// Sort by string field
+list.sort((a, b) ->
+    a.getString("name").compareTo(b.getString("name"))
+);</pre>
+    <button class="ask-btn" onclick="sendPrompt('Give me a Java REST API practice problem involving sorting and filtering a JSON array')">Practice: sort + filter ↗</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Find max/min/sum from API data</div>
+    <pre>int max = Integer.MIN_VALUE;
+int sum = 0;
+
+for (int i = 0; i &lt; arr.length(); i++) {
+    int val = arr.getJSONObject(i).getInt("score");
+    sum += val;
+    if (val > max) max = val;
+}
+double avg = (double) sum / arr.length();</pre>
+  </div>
+</div>
+
+<div id="stream" class="section">
+  <div class="card">
+    <div class="card-title">Convert JSONArray → List for Streams</div>
+    <span class="badge badge-amber">Optional</span>
+    <pre>// First convert to List&lt;JSONObject&gt;
+List&lt;JSONObject&gt; items = new ArrayList&lt;&gt;();
+for (int i = 0; i &lt; arr.length(); i++)
+    items.add(arr.getJSONObject(i));
+
+// Now use streams
+long count = items.stream()
+    .filter(o -> o.getInt("age") > 30)
+    .count();
+
+int total = items.stream()
+    .mapToInt(o -> o.getInt("salary"))
+    .sum();
+
+Optional&lt;JSONObject&gt; top = items.stream()
+    .max(Comparator.comparingInt(o -> o.getInt("score")));</pre>
+    <div class="note">Streams will feel natural. But the standard for-loop approach is totally fine on HackerRank.</div>
+    <button class="ask-btn" onclick="sendPrompt('Explain Java streams methods: filter, map, collect, max, groupingBy with examples for REST API data')">Deep dive: stream methods ↗</button>
+  </div>
+</div>
+
+<div id="pattern" class="section">
+  <div class="card">
+    <div class="card-title">Typical HackerRank task structure</div>
+    <span class="badge badge-red">Must know</span>
+    <pre>import java.net.http.*;
+import java.net.URI;
+import org.json.*;
+import java.util.*;
+
+public class Solution {
+    public static void main(String[] args) throws Exception {
+        // 1. Build client + request
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest req = HttpRequest.newBuilder()
+            .uri(URI.create("https://jsonmock.hackerrank.com/api/..."))
+            .GET().build();
+
+        // 2. Send and get body
+        String body = client.send(req,
+            HttpResponse.BodyHandlers.ofString()).body();
+
+        // 3. Parse JSON
+        JSONObject root = new JSONObject(body);
+        JSONArray data = root.getJSONArray("data");
+
+        // 4. Process (filter, sort, count, sum...)
+        int answer = 0;
+        for (int i = 0; i &lt; data.length(); i++) {
+            JSONObject item = data.getJSONObject(i);
+            // your logic here
+        }
+
+        // 5. Print result
+        System.out.println(answer);
+    }
+}</pre>
+    <div class="note">Assessments often use <code>jsonmock.hackerrank.com</code> as the fake API endpoint. The response usually has a "data" array and "total_pages" for pagination.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Pagination (multi-page APIs)</div>
+    <span class="badge badge-red">Frequently tested</span>
+    <pre>int page = 1;
+int totalPages = 1;
+List&lt;JSONObject&gt; all = new ArrayList&lt;&gt;();
+
+do {
+    String url = "https://jsonmock.hackerrank.com/api/movies"
+                 + "?page=" + page;
+    String body = client.send(
+        HttpRequest.newBuilder().uri(URI.create(url)).GET().build(),
+        HttpResponse.BodyHandlers.ofString()
+    ).body();
+
+    JSONObject root = new JSONObject(body);
+    totalPages = root.getInt("total_pages");
+    JSONArray data = root.getJSONArray("data");
+
+    for (int i = 0; i &lt; data.length(); i++)
+        all.add(data.getJSONObject(i));
+
+    page++;
+} while (page &lt;= totalPages);</pre>
+    <div class="note"><strong>Crucial:</strong> Always check "total_pages" in the first response and loop through all pages before processing.</div>
+    <button class="ask-btn" onclick="sendPrompt('Give me a complete Java solution for a paginated HackerRank REST API problem with jsonmock.hackerrank.com')">Full pagination solution ↗</button>
+  </div>
+</div>
+
+<script>
+function show(id, event){
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>

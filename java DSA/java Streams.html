@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java Streams — HackerRank Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --border: #e2e8f0;
+    
+    --badge-blue-bg: #dbeafe;
+    --badge-blue-txt: #1e40af;
+    --badge-green-bg: #dcfce7;
+    --badge-green-txt: #166534;
+    --badge-amber-bg: #fef3c7;
+    --badge-amber-txt: #92400e;
+    --badge-purple-bg: #f3e8ff;
+    --badge-purple-txt: #6b21a8;
+    
+    --code-bg: #1e293b;
+    --code-txt: #e2e8f0;
+    --console-bg: #0f172a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    font-size: 15px;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0);
+  }
+
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .header h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-main);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .header p {
+    color: var(--text-muted);
+    font-size: 15px;
+  }
+
+  .method-nav {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 1rem;
+  }
+
+  .mnav {
+    padding: 8px 20px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    font-family: 'Fira Code', monospace;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  }
+
+  .mnav:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  .mnav.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+  }
+
+  .pane {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .pane.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-right: 8px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .b-blue { background: var(--badge-blue-bg); color: var(--badge-blue-txt); }
+  .b-green { background: var(--badge-green-bg); color: var(--badge-green-txt); }
+  .b-amber { background: var(--badge-amber-bg); color: var(--badge-amber-txt); }
+  .b-purple { background: var(--badge-purple-bg); color: var(--badge-purple-txt); }
+
+  .note {
+    font-size: 14.5px;
+    color: var(--text-main);
+    background: #f1f5f9;
+    padding: 14px 18px;
+    border-left: 4px solid var(--text-muted);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 20px;
+  }
+
+  .pipeline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    background: var(--bg-main);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+  }
+
+  .pipe-box {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+  }
+
+  .pipe-src { background: #e2e8f0; color: #475569; border-color: #cbd5e1; }
+  .pipe-mid { background: var(--badge-purple-bg); color: var(--badge-purple-txt); border-color: #d8b4fe; }
+  .pipe-end { background: var(--badge-green-bg); color: var(--badge-green-txt); border-color: #86efac; }
+  .pipe-arrow { color: #94a3b8; font-size: 16px; font-weight: bold; }
+
+  pre {
+    background: var(--code-bg);
+    color: var(--code-txt);
+    border-radius: 8px;
+    padding: 1.25rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    overflow-x: auto;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+    border: 1px solid #334155;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Syntax Highlighting Colors */
+  .kw { color: #c678dd; font-weight: 500; }
+  .fn { color: #61afef; }
+  .str { color: #98c379; }
+  .cm { color: #94a3b8; font-style: italic; }
+  .num { color: #d19a66; }
+  .tp { color: #e5c07b; }
+  .op { color: #56b6c2; }
+
+  .output-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .output-box {
+    background: var(--console-bg);
+    border-left: 3px solid var(--badge-green-txt);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 1.5rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 13.5px;
+    color: #a7f3d0;
+    line-height: 1.8;
+  }
+
+  .try-btn {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--primary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .try-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2rem 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<div class="header">
+  <h2>Java Streams — API Assessment Guide</h2>
+  <p>Core methods explained with realistic REST API data manipulation examples</p>
+</div>
+
+<div class="method-nav">
+  <button class="mnav active" onclick="show('filter', event)">filter()</button>
+  <button class="mnav" onclick="show('map', event)">map()</button>
+  <button class="mnav" onclick="show('collect', event)">collect()</button>
+  <button class="mnav" onclick="show('max', event)">max() / min()</button>
+  <button class="mnav" onclick="show('groupby', event)">groupingBy()</button>
+  <button class="mnav" onclick="show('chained', event)">chained pipeline</button>
+</div>
+
+<div id="filter" class="pane active">
+  <div class="card">
+    <span class="badge b-blue">intermediate</span>
+    <span class="badge b-purple">keeps matching items</span>
+    <p class="note">Takes a predicate (true/false condition). Keeps only items where the condition is true. Returns a new stream — does not modify the original list.</p>
+    
+    <div class="pipeline">
+      <span class="pipe-box pipe-src">List of matches</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-box pipe-mid">.filter(goals > 2)</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-box pipe-end">only high-scoring</span>
+    </div>
+    
+    <pre><span class="cm">// Data: list of JSONObjects from football_matches API</span>
+<span class="tp">List</span>&lt;<span class="tp">JSONObject</span>&gt; matches = <span class="cm">/* from API */</span>;
+
+<span class="cm">// Keep only matches where team1 scored more than 2 goals</span>
+<span class="tp">List</span>&lt;<span class="tp">JSONObject</span>&gt; highScoring = matches.stream()
+    .filter(m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>) > <span class="num">2</span>)
+    .collect(<span class="tp">Collectors</span>.toList());
+
+<span class="cm">// Multiple conditions — chain with &&</span>
+<span class="tp">List</span>&lt;<span class="tp">JSONObject</span>&gt; draws = matches.stream()
+    .filter(m <span class="op">-></span>
+        m.getInt(<span class="str">"team1goals"</span>) <span class="op">==</span>
+        m.getInt(<span class="str">"team2goals"</span>))
+    .collect(<span class="tp">Collectors</span>.toList());</pre>
+    
+    <div class="output-label">output</div>
+    <div class="output-box">highScoring → only matches where team1goals &gt; 2<br>draws → only matches where scores were equal</div>
+    
+    <button class="try-btn" onclick="sendPrompt('Give me a filter() stream practice problem using HackerRank football matches API in Java')">Practice: filter problem ↗</button>
+  </div>
+</div>
+
+<div id="map" class="pane">
+  <div class="card">
+    <span class="badge b-blue">intermediate</span>
+    <span class="badge b-purple">transforms each item</span>
+    <p class="note">Applies a function to every element and returns a stream of the transformed results. Use it to extract a field, convert a type, or reshape an object.</p>
+    
+    <div class="pipeline">
+      <span class="pipe-box pipe-src">List&lt;JSONObject&gt;</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-box pipe-mid">.map(get "winner")</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-box pipe-end">List&lt;String&gt;</span>
+    </div>
+    
+    <pre><span class="cm">// Extract winner names from competitions API response</span>
+<span class="tp">List</span>&lt;<span class="tp">String</span>&gt; winners = competitions.stream()
+    .map(c <span class="op">-></span> c.getString(<span class="str">"winner"</span>))
+    .collect(<span class="tp">Collectors</span>.toList());
+
+<span class="cm">// mapToInt — extracts an int field (enables sum/avg/max)</span>
+<span class="kw">int</span>[] goalCounts = matches.stream()
+    .mapToInt(m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>))
+    .toArray();
+
+<span class="cm">// map to compute a new value per item</span>
+<span class="tp">List</span>&lt;<span class="tp">Integer</span>&gt; totalGoals = matches.stream()
+    .map(m <span class="op">-></span>
+        m.getInt(<span class="str">"team1goals"</span>) +
+        m.getInt(<span class="str">"team2goals"</span>))
+    .collect(<span class="tp">Collectors</span>.toList());</pre>
+    
+    <div class="output-label">output</div>
+    <div class="output-box">winners → ["Chelsea", "Barcelona", "Bayern"]<br>totalGoals → [3, 2, 5, 1, 4, ...]</div>
+    
+    <button class="try-btn" onclick="sendPrompt('Give me a map() stream practice problem using HackerRank API JSON data in Java')">Practice: map problem ↗</button>
+  </div>
+</div>
+
+<div id="collect" class="pane">
+  <div class="card">
+    <span class="badge b-blue">intermediate</span>
+    <span class="badge b-purple">terminates the stream</span>
+    <p class="note">Collects the stream back into a concrete collection. It's a terminal operation — nothing runs until you call collect(). Three variants you need to know:</p>
+    
+    <pre><span class="kw">import</span> java.util.stream.Collectors;
+
+<span class="cm">// 1. toList() — most common, collect to ArrayList</span>
+<span class="tp">List</span>&lt;<span class="tp">String</span>&gt; names = matches.stream()
+    .map(m <span class="op">-></span> m.getString(<span class="str">"team1"</span>))
+    .collect(<span class="tp">Collectors</span>.toList());
+
+<span class="cm">// 2. toSet() — removes duplicates automatically</span>
+<span class="tp">Set</span>&lt;<span class="tp">String</span>&gt; uniqueTeams = matches.stream()
+    .map(m <span class="op">-></span> m.getString(<span class="str">"team1"</span>))
+    .collect(<span class="tp">Collectors</span>.toSet());
+
+<span class="cm">// 3. joining() — concatenates strings</span>
+<span class="tp">String</span> csv = matches.stream()
+    .map(m <span class="op">-></span> m.getString(<span class="str">"team1"</span>))
+    .collect(<span class="tp">Collectors</span>.joining(<span class="str">", "</span>));
+
+<span class="cm">// 4. counting() — count matching items</span>
+<span class="kw">long</span> count = matches.stream()
+    .filter(m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>) > <span class="num">2</span>)
+    .collect(<span class="tp">Collectors</span>.counting());
+
+<span class="cm">// 5. summingInt() — sum an int field</span>
+<span class="kw">int</span> totalGoals = matches.stream()
+    .collect(<span class="tp">Collectors</span>.summingInt(
+        m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>)));</pre>
+        
+    <div class="output-label">output examples</div>
+    <div class="output-box">uniqueTeams → [Barcelona, Chelsea, Bayern] (no duplicates)<br>csv → "Chelsea, Barcelona, Bayern, Chelsea"<br>count → 7<br>totalGoals → 34</div>
+  </div>
+</div>
+
+<div id="max" class="pane">
+  <div class="card">
+    <span class="badge b-blue">intermediate</span>
+    <span class="badge b-amber">returns Optional</span>
+    <p class="note"><code>max()</code> and <code>min()</code> return an <code>Optional&lt;T&gt;</code> — you must call <code>.get()</code> or <code>.orElse()</code> to unwrap the value. Pass a <code>Comparator</code> to tell it what to compare by.</p>
+    
+    <pre><span class="cm">// Find match with most team1 goals</span>
+<span class="tp">Optional</span>&lt;<span class="tp">JSONObject</span>&gt; topMatch = matches.stream()
+    .max(<span class="tp">Comparator</span>.comparingInt(
+        m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>)));
+
+<span class="cm">// Safely unwrap with .get()</span>
+<span class="kw">if</span> (topMatch.isPresent()) {
+    <span class="tp">JSONObject</span> m = topMatch.get();
+    <span class="tp">System</span>.out.println(m.getString(<span class="str">"team1"</span>));
+}
+
+<span class="cm">// Or use .orElse() to provide a default</span>
+<span class="tp">JSONObject</span> best = matches.stream()
+    .max(<span class="tp">Comparator</span>.comparingInt(
+        m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>)))
+    .orElse(<span class="kw">null</span>);
+
+<span class="cm">// mapToInt + max() — simpler when you just need the number</span>
+<span class="kw">int</span> maxGoals = matches.stream()
+    .mapToInt(m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>))
+    .max()
+    .orElse(<span class="num">0</span>);
+
+<span class="cm">// min() — same pattern, opposite result</span>
+<span class="kw">int</span> minGoals = matches.stream()
+    .mapToInt(m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>))
+    .min()
+    .orElse(<span class="num">0</span>);</pre>
+    
+    <div class="output-label">output</div>
+    <div class="output-box">maxGoals → 5<br>minGoals → 0<br>best → JSONObject of the highest-scoring match</div>
+    
+    <button class="try-btn" onclick="sendPrompt('Give me a max() and min() stream practice problem using HackerRank football API data in Java')">Practice: max/min problem ↗</button>
+  </div>
+</div>
+
+<div id="groupby" class="pane">
+  <div class="card">
+    <span class="badge b-blue">advanced</span>
+    <span class="badge b-amber">returns Map</span>
+    <p class="note"><code>groupingBy()</code> splits a list into groups based on a key. Returns a <code>Map&lt;Key, List&lt;T&gt;&gt;</code>. Very useful for counting per category or summing per group.</p>
+    
+    <pre><span class="kw">import</span> java.util.stream.Collectors;
+<span class="kw">import</span> java.util.*;
+
+<span class="cm">// Group matches by team1 name</span>
+<span class="tp">Map</span>&lt;<span class="tp">String</span>, <span class="tp">List</span>&lt;<span class="tp">JSONObject</span>&gt;&gt; byTeam = matches.stream()
+    .collect(<span class="tp">Collectors</span>.groupingBy(
+        m <span class="op">-></span> m.getString(<span class="str">"team1"</span>)));
+<span class="cm">// { "Chelsea": [...], "Barcelona": [...], ... }</span>
+
+<span class="cm">// Count matches per team</span>
+<span class="tp">Map</span>&lt;<span class="tp">String</span>, <span class="tp">Long</span>&gt; matchCount = matches.stream()
+    .collect(<span class="tp">Collectors</span>.groupingBy(
+        m <span class="op">-></span> m.getString(<span class="str">"team1"</span>),
+        <span class="tp">Collectors</span>.counting()));
+<span class="cm">// { "Chelsea": 6, "Barcelona": 8, ... }</span>
+
+<span class="cm">// Sum goals per team (most common in IBM tests)</span>
+<span class="tp">Map</span>&lt;<span class="tp">String</span>, <span class="tp">Integer</span>&gt; goalsByTeam = matches.stream()
+    .collect(<span class="tp">Collectors</span>.groupingBy(
+        m <span class="op">-></span> m.getString(<span class="str">"team1"</span>),
+        <span class="tp">Collectors</span>.summingInt(
+            m <span class="op">-></span> m.getInt(<span class="str">"team1goals"</span>))));
+<span class="cm">// { "Chelsea": 14, "Barcelona": 22, ... }</span>
+
+<span class="cm">// Find team with most goals using max on the map</span>
+<span class="tp">String</span> topScorer = goalsByTeam.entrySet().stream()
+    .max(<span class="tp">Map</span>.Entry.comparingByValue())
+    .get().getKey();</pre>
+    
+    <div class="output-label">output</div>
+    <div class="output-box">matchCount → {Chelsea=6, Barcelona=8, Bayern=5}<br>goalsByTeam → {Chelsea=14, Barcelona=22, Bayern=11}<br>topScorer → "Barcelona"</div>
+    
+    <button class="try-btn" onclick="sendPrompt('Give me a groupingBy() stream practice problem using HackerRank API data in Java')">Practice: groupingBy problem ↗</button>
+  </div>
+</div>
+
+<div id="chained" class="pane">
+  <div class="card">
+    <span class="badge b-green">real exam pattern</span>
+    <p class="note" style="background: var(--bg-main); border-left-color: var(--badge-green-txt);">In assessment tests you almost always chain multiple methods. Here's a realistic multi-step problem: from paginated API data, find the team with the most wins (where a win = more goals than opponent).</p>
+    
+    <div class="pipeline">
+      <span class="pipe-box pipe-src">raw matches</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-box pipe-mid">.filter(team1 won)</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-box pipe-mid">.map(team1 name)</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-box pipe-mid">groupingBy + count</span>
+      <span class="pipe-arrow">→</span>
+      <span class="pipe-box pipe-end">team with max wins</span>
+    </div>
+    
+    <pre><span class="cm">// Step 1: collect all matches from all pages first</span>
+<span class="tp">List</span>&lt;<span class="tp">JSONObject</span>&gt; all = <span class="cm">/* paginated fetch */</span>;
+
+<span class="cm">// Step 2: chain filter → map → collect → max</span>
+<span class="tp">String</span> mostWins = all.stream()
+
+    <span class="cm">// keep only matches where team1 won</span>
+    .filter(m <span class="op">-></span>
+        m.getInt(<span class="str">"team1goals"</span>) >
+        m.getInt(<span class="str">"team2goals"</span>))
+
+    <span class="cm">// extract team1 name</span>
+    .map(m <span class="op">-></span> m.getString(<span class="str">"team1"</span>))
+
+    <span class="cm">// group by name and count wins</span>
+    .collect(<span class="tp">Collectors</span>.groupingBy(
+        t <span class="op">-></span> t,
+        <span class="tp">Collectors</span>.counting()))
+
+    <span class="cm">// get team with highest count</span>
+    .entrySet().stream()
+    .max(<span class="tp">Map</span>.Entry.comparingByValue())
+    .get()
+    .getKey();
+
+<span class="tp">System</span>.out.println(mostWins);</pre>
+    
+    <div class="output-label">output</div>
+    <div class="output-box">mostWins → "Barcelona"</div>
+    
+    <div class="divider"></div>
+    <p class="note" style="border-left-color: var(--primary);"><strong>The mental model:</strong> think of a stream as an assembly line. Raw data comes in, each method transforms or filters it, and <code>collect()</code> / <code>max()</code> / <code>count()</code> terminates the line and gives you the final result.</p>
+    
+    <button class="try-btn" onclick="sendPrompt('Give me a full chained Java streams problem: fetch paginated football data and find the team with most wins using filter map groupingBy')">Give me this as a full problem ↗</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+function show(id, event){
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.mnav').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>
